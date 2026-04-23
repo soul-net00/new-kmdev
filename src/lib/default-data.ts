@@ -24,7 +24,7 @@ export const defaultSiteSettings: Omit<SiteSettingsType, "_id"> = {
   },
   contact: {
     email: "kgomotsothabo2004@gmail.com",
-    whatsapp: "27601603996"
+    whatsapp: "0601603996"
   }
 };
 

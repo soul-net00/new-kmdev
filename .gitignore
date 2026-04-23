@@ -39,3 +39,4 @@ coverage/
 *.log
 .vercel
 .turbo
+node_modules

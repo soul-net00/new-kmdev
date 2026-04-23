@@ -4,7 +4,7 @@ import type { SiteSettings } from "@/types";
 export function Contact({ settings }: { settings: SiteSettings }) {
   const contact = settings.contact || { email: "", whatsapp: "" };
   const email = contact.email || "kgomotsothabo2004@gmail.com";
-  const whatsapp = contact.whatsapp || "27601603996";
+  const whatsapp = contact.whatsapp || "0601603996";
 
   return (
     <section id="contact" className="mx-auto max-w-6xl px-4 py-12 md:py-16">
