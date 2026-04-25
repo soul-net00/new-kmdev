@@ -91,7 +91,7 @@ export function ParticleBackground() {
         star.y += Math.sin(star.angle) * star.speed;
         star.opacity -= 0.01;
 
-        if (star.opacity <= 0 || star.x > c.width || star.y > c.height) {
+        if (star.opacity <= 0 || star.x > c.width || star.y > c.height || !ctx) {
           star.active = false;
           shootingStars.splice(index, 1);
           return;
