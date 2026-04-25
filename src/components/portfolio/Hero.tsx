@@ -23,20 +23,26 @@ export function Hero({ hero }: { hero: HeroContent }) {
           <Link href="/services" className="rounded-xl border border-slate-300 px-5 py-3 font-semibold dark:border-slate-700">My Services</Link>
         </div>
       </div>
-      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 md:rounded-3xl md:p-6">
-        <div className="mb-3 flex gap-2 md:mb-4">
-          <span className="h-2.5 w-2.5 rounded-full bg-red-400 md:h-3 md:w-3" />
-          <span className="h-2.5 w-2.5 rounded-full bg-amber-400 md:h-3 md:w-3" />
-          <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 md:h-3 md:w-3" />
-        </div>
-        <pre className="overflow-x-auto rounded-xl bg-slate-950 p-3 text-xs text-slate-200 md:rounded-2xl md:p-5 md:text-sm">
+<div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 md:rounded-3xl md:p-6">
+        {hero.image ? (
+          <img src={hero.image} alt="Kgomotso Mamogale" className="w-full rounded-xl object-cover max-h-48 mb-4" />
+        ) : (
+          <>
+            <div className="mb-3 flex gap-2 md:mb-4">
+              <span className="h-2.5 w-2.5 rounded-full bg-red-400 md:h-3 md:w-3" />
+              <span className="h-2.5 w-2.5 rounded-full bg-amber-400 md:h-3 md:w-3" />
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 md:h-3 md:w-3" />
+            </div>
+            <pre className="overflow-x-auto rounded-xl bg-slate-950 p-3 text-xs text-slate-200 md:rounded-2xl md:p-5 md:text-sm">
 {`const developer = {
   name: "Kgomotso M.",
   brand: "KMDev",
   stack: ["Next.js", "TS", "MongoDB"],
   available: true
 }`}
-        </pre>
+            </pre>
+          </>
+        )}
         <div className="mt-4 grid grid-cols-3 gap-2 md:mt-6 md:gap-4">
           {stats.map((stat) => (
             <div key={stat.label} className="rounded-xl border border-slate-200 bg-white p-2.5 dark:border-slate-800 dark:bg-slate-950 md:p-4">

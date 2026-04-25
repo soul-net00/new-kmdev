@@ -9,9 +9,13 @@ export function About({ about }: { about: AboutContent }) {
       <p className="mb-2 font-mono text-xs uppercase tracking-[0.3em] text-emerald-600">About</p>
       <h2 className="text-2xl font-bold md:text-4xl">Real IT solutions, built with purpose.</h2>
       <div className="mt-6 grid gap-6 md:mt-8 md:grid-cols-[0.8fr,1.2fr]">
-        <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-100 to-slate-100 p-6 text-4xl font-black text-emerald-700 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:to-slate-950 dark:text-emerald-500 md:rounded-3xl md:p-8 md:text-6xl">
-          KM
-        </div>
+        {about.image ? (
+          <img src={about.image} alt="Kgomotso Mamogale" className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-100 to-slate-100 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:to-slate-950 md:rounded-3xl object-cover w-full h-48 md:h-auto" />
+        ) : (
+          <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-100 to-slate-100 p-6 text-4xl font-black text-emerald-700 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:to-slate-950 dark:text-emerald-500 md:rounded-3xl md:p-8 md:text-6xl">
+            KM
+          </div>
+        )}
         <div>
           {paragraphs.map((paragraph) => (
             <p key={paragraph} className="mb-3 text-sm text-slate-600 dark:text-slate-300 md:mb-4 md:text-base">{paragraph}</p>

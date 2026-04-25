@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getSiteSettings } from "@/lib/data";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { AdminImageInput } from "@/components/admin/AdminImageInput";
@@ -14,23 +13,46 @@ interface AboutSection {
 
 export default function AdminAboutPage() {
   const [settings, setSettings] = useState<{ about: AboutSection } | null>(null);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    getSiteSettings().then((data: any) => setSettings(data));
+    fetch("/api/site-settings")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.about) {
+          setSettings({ about: data.about });
+        } else {
+          setSettings({
+            about: {
+              text: "",
+              image: "",
+              highlights: []
+            }
+          });
+        }
+      })
+      .catch(() => {
+        setSettings({
+          about: { text: "", image: "", highlights: [] }
+        });
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const handleSave = async () => {
     if (!settings) return;
     setSaving(true);
     try {
-      const res = await fetch("/api/site-settings", {
+      const res = await fetch("/api/site-settings");
+      const current = await res.json();
+      const saveRes = await fetch("/api/site-settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(settings)
+        body: JSON.stringify({ ...current, about: settings.about })
       });
-      if (res.ok) {
+      if (saveRes.ok) {
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
       }
@@ -39,7 +61,8 @@ export default function AdminAboutPage() {
     }
   };
 
-  if (!settings) return <div className="text-slate-400">Loading...</div>;
+  if (loading) return <div className="text-slate-400">Loading...</div>;
+  if (!settings?.about) return <div className="text-slate-400">Error loading settings</div>;
 
   return (
     <div className="space-y-6">
@@ -70,7 +93,7 @@ export default function AdminAboutPage() {
         <div>
           <label className="mb-1 block text-sm text-slate-400">Highlights (comma separated)</label>
           <Input
-            value={settings.about.highlights.join(", ")}
+            value={(settings.about.highlights || []).join(", ")}
             onChange={(e) => setSettings({ 
               ...settings, 
               about: { ...settings.about, highlights: e.target.value.split(",").map(s => s.trim()) } 

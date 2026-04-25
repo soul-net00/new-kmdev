@@ -16,13 +16,31 @@ export function AdminImageInput({ value, onChange, label = "Image" }: AdminImage
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [imageError, setImageError] = useState(false);
+
+  const isValidUrl = (str: string) => {
+    try {
+      new URL(str);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   const handleUrlSubmit = () => {
+    setImageError(false);
     if (urlInput && isValidUrl(urlInput)) {
       onChange(urlInput);
-      setError("");
     } else if (urlInput) {
       setError("Please enter a valid image URL");
     }
+  };
+
+  const handleRemove = () => {
+    onChange("");
+    setUrlInput("");
+    setError("");
+    setImageError(false);
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,21 +81,6 @@ export function AdminImageInput({ value, onChange, label = "Image" }: AdminImage
     }
   };
 
-  const handleRemove = () => {
-    onChange("");
-    setUrlInput("");
-    setError("");
-  };
-
-  const isValidUrl = (str: string) => {
-    try {
-      new URL(str);
-      return true;
-    } catch {
-      return false;
-    }
-  };
-
   const hasImage = Boolean(value);
 
   return (
@@ -86,7 +89,7 @@ export function AdminImageInput({ value, onChange, label = "Image" }: AdminImage
       
       {hasImage && (
         <div className="relative overflow-hidden rounded-xl border border-slate-700 bg-slate-800">
-          <img src={value} alt="Preview" className="h-40 w-full object-cover" />
+          <img src={value} alt="Preview" className="h-40 w-full object-cover" onError={() => setImageError(true)} />
           <button
             type="button"
             onClick={handleRemove}
@@ -94,6 +97,12 @@ export function AdminImageInput({ value, onChange, label = "Image" }: AdminImage
           >
             Remove
           </button>
+        </div>
+      )}
+      {imageError && (
+        <div className="rounded-xl border border-red-500/50 bg-red-500/10 p-4 text-center">
+          <p className="text-sm font-medium text-red-400">Image failed to load. Please check the URL or try another image.</p>
+          <button onClick={handleRemove} className="mt-2 text-sm text-red-300 underline">Remove image</button>
         </div>
       )}
 
@@ -132,6 +141,7 @@ export function AdminImageInput({ value, onChange, label = "Image" }: AdminImage
                 onChange={(e) => {
                   setUrlInput(e.target.value);
                   setError("");
+                  setImageError(false);
                 }}
                 placeholder="https://example.com/image.jpg"
                 className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500"
