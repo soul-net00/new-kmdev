@@ -38,7 +38,7 @@ export function ServicesCatalog({ services, whatsapp }: { services: ServiceType[
 
       <button
         onClick={() => setCartOpen(true)}
-        className="fixed bottom-6 right-6 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 shadow-lg xl:hidden"
+        className="fixed bottom-4 left-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 shadow-lg md:bottom-4 md:right-4 xl:hidden"
         aria-label="Open cart"
       >
         <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

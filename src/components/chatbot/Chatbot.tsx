@@ -159,7 +159,7 @@ export default function Chatbot() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl ${
+        className={`fixed bottom-20 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl md:bottom-4 md:right-4 ${
           isOpen ? "hidden" : "flex"
         }`}
         aria-label="Open chat"
@@ -181,7 +181,7 @@ export default function Chatbot() {
       </button>
 
       <div
-        className={`fixed bottom-4 right-4 z-50 transition-all duration-300 ${
+        className={`fixed bottom-20 right-4 z-50 transition-all duration-300 md:bottom-4 md:right-4 ${
           isOpen ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0 pointer-events-none"
         }`}
       >

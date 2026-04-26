@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ShareModal } from "@/components/ui/ShareModal";
+import { PreviewableImage } from "@/components/ui/PreviewableImage";
 import type { ProjectType } from "@/types";
 
 export function ProjectCard({ project }: { project: ProjectType }) {
@@ -10,13 +11,15 @@ export function ProjectCard({ project }: { project: ProjectType }) {
   const url = project.liveUrl || project.githubUrl || "https://kmdev.example.com";
 
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-1 dark:border-slate-800 dark:bg-slate-900 sm:p-5">
-      <div className="mb-3 rounded-xl bg-slate-100 p-4 text-center dark:bg-slate-950 sm:mb-4 sm:p-6">
-        {project.image ? (
-          <img src={project.image} alt={project.title} className="h-28 w-full rounded-lg object-cover sm:h-32" />
-        ) : (
-          <div className="h-20 flex items-center justify-center text-4xl sm:h-28">💻</div>
-        )}
+    <article className="group rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-emerald-500/10 dark:border-slate-800 dark:bg-slate-900 dark:hover:shadow-emerald-500/20 sm:p-5">
+      <div className="mb-3 overflow-hidden rounded-xl sm:mb-4">
+        <PreviewableImage
+          src={project.image || ""}
+          alt={project.title}
+          className="h-28 w-full sm:h-32"
+          fallbackEmoji="💻"
+          showSparkle
+        />
       </div>
       <div className="mb-1.5 text-xs font-semibold uppercase tracking-[0.25em] text-emerald-600">{project.category}</div>
       <h3 className="text-base font-semibold sm:text-xl">{project.title}</h3>

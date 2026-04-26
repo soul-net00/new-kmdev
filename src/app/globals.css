@@ -49,6 +49,20 @@ select {
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
+  /* Sparkle animations */
+  @keyframes sparkle {
+    0%, 100% { opacity: 0; transform: scale(0); }
+    50% { opacity: 1; transform: scale(1); }
+  }
+  
+  .animate-sparkle {
+    animation: sparkle 1.5s ease-in-out infinite;
+  }
+  
+  .animate-sparkle-delayed {
+    animation: sparkle 1.5s ease-in-out 0.5s infinite;
+  }
 }
 
 @media (max-width: 640px) {
