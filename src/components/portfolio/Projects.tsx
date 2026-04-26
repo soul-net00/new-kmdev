@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useRef, useCallback } from "react";
+import { useMemo, useState, useCallback } from "react";
 import type { ProjectType } from "@/types";
 import { ProjectCard } from "./ProjectCard";
 
@@ -12,7 +12,6 @@ export function Projects({ projects }: { projects: ProjectType[] }) {
   const [currentPage, setCurrentPage] = useState(0);
   const filtered = useMemo(() => active === "All" ? projects : projects.filter((project) => project.category === active), [active, projects]);
   const availableFilters = useMemo(() => filters.filter((f) => f === "All" || projects.some((p) => p.category === f)), [projects]);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   if (projects.length === 0) return null;
 
@@ -21,11 +20,11 @@ export function Projects({ projects }: { projects: ProjectType[] }) {
 
   const goToPage = useCallback((page: number) => {
     setCurrentPage(page);
-    const container = scrollRef.current;
-    if (container) {
-      const cardWidth = container.clientWidth / ITEMS_PER_PAGE;
-      container.scrollTo({ left: page * cardWidth * ITEMS_PER_PAGE, behavior: "smooth" });
-    }
+  }, []);
+
+  const handleFilterChange = useCallback((filter: typeof active) => {
+    setActive(filter);
+    setCurrentPage(0);
   }, []);
 
   return (
@@ -35,7 +34,7 @@ export function Projects({ projects }: { projects: ProjectType[] }) {
         <h2 className="text-2xl font-bold md:text-4xl">Featured work</h2>
         <div className="flex flex-wrap gap-2">
           {availableFilters.map((filter) => (
-            <button key={filter} onClick={() => { setActive(filter); setCurrentPage(0); }} className={`rounded-full px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm ${active === filter ? "bg-emerald-500 text-slate-950" : "border border-slate-300 dark:border-slate-700"}`}>
+            <button key={filter} onClick={() => handleFilterChange(filter)} className={`rounded-full px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm ${active === filter ? "bg-emerald-500 text-slate-950" : "border border-slate-300 dark:border-slate-700"}`}>
               {filter}
             </button>
           ))}
@@ -43,14 +42,9 @@ export function Projects({ projects }: { projects: ProjectType[] }) {
       </div>
       
       <div className="relative">
-        <div 
-          ref={scrollRef}
-          className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 sm:grid sm:snap-none sm:overflow-visible sm:grid-cols-3 sm:gap-4 sm:px-0 sm:pb-0"
-        >
-          {filtered.map((project) => (
-            <div key={project._id} className="w-[85vw] snap-center shrink-0 sm:w-auto">
-              <ProjectCard project={project} />
-            </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {visibleProjects.map((project) => (
+            <ProjectCard key={project._id} project={project} />
           ))}
         </div>
         
@@ -59,7 +53,7 @@ export function Projects({ projects }: { projects: ProjectType[] }) {
             <button 
               onClick={() => goToPage(currentPage - 1)} 
               disabled={currentPage === 0}
-              className="absolute left-0 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white shadow-md transition-all hover:border-emerald-400 disabled:opacity-30 dark:border-slate-700 dark:bg-slate-900 md:flex" 
+              className="absolute left-0 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white shadow-md transition-all hover:border-emerald-400 disabled:opacity-30 dark:border-slate-700 dark:bg-slate-900 hidden md:flex" 
               aria-label="Previous"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
@@ -67,7 +61,7 @@ export function Projects({ projects }: { projects: ProjectType[] }) {
             <button 
               onClick={() => goToPage(currentPage + 1)} 
               disabled={currentPage === totalPages - 1}
-              className="absolute right-0 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white shadow-md transition-all hover:border-emerald-400 disabled:opacity-30 dark:border-slate-700 dark:bg-slate-900 md:flex" 
+              className="absolute right-0 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white shadow-md transition-all hover:border-emerald-400 disabled:opacity-30 dark:border-slate-700 dark:bg-slate-900 hidden md:flex" 
               aria-label="Next"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
@@ -76,7 +70,7 @@ export function Projects({ projects }: { projects: ProjectType[] }) {
         )}
         
         {totalPages > 1 && (
-          <div className="flex justify-center gap-1.5 pb-2 md:hidden">
+          <div className="flex justify-center gap-2 pt-4">
             {Array.from({ length: totalPages }).map((_, i) => (
               <button 
                 key={i} 
