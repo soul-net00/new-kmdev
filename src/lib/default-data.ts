@@ -4,11 +4,11 @@ export const defaultSiteSettings: Omit<SiteSettingsType, "_id"> = {
   brandName: "KMDev",
   hero: {
     title: "IT Specialist & Web Developer",
-    subtitle: "Building smart IT solutions",
-    intro: "I specialize in networking, web development, and system analysis to help businesses leverage technology effectively.",
+    subtitle: "Networking | Web Development | System Analysis",
+    intro: "I specialize in VPNs, proxy systems, network configuration, and modern web applications. I help businesses improve their systems using technology.",
     image: "",
     stats: [
-      { label: "Projects", value: "10+" },
+      { label: "Projects", value: "6+" },
       { label: "Services", value: "6" },
       { label: "Clients", value: "3+" }
     ],
@@ -18,9 +18,9 @@ export const defaultSiteSettings: Omit<SiteSettingsType, "_id"> = {
     ]
   },
   about: {
-    text: "Hi, I'm Kgomotso Mamogale 👋\n\nI'm an IT professional specializing in networking, web development, and system analysis. My expertise spans VPN configurations, proxy systems, and network infrastructure management, complemented by building modern, responsive web applications.\n\nI bring hands-on experience with database design, Excel automation, and SQL query development. Additionally, I offer computer hardware services including diagnostics, assembly, and system setup—enabling me to deliver comprehensive IT solutions for businesses and individuals alike.\n\nLet's build something remarkable together 🚀",
+    text: "Hi, I'm KMDev 👋\n\nI'm an IT specialist focused on networking, web development, and system analysis. I work with VPNs, proxy systems, and network configuration, while also building modern web applications.\n\nI have experience with databases, Excel, query development, computer hardware, and system setup—allowing me to analyze and improve business systems effectively.\n\nLet's build something smart 🚀",
     image: "",
-    highlights: ["Web Development", "Database Design", "IT Support", "Networking"]
+    highlights: ["Networking", "Web Development", "System Analysis", "IT Support"]
   },
   contact: {
     email: "kgomotsothabo2004@gmail.com",
@@ -31,96 +31,97 @@ export const defaultSiteSettings: Omit<SiteSettingsType, "_id"> = {
 export const defaultProjects: ProjectType[] = [
   {
     title: "Smart Receipt System",
-    description: "A comprehensive web-based receipt management system with offline and online capabilities, designed for small businesses to manage transactions seamlessly.",
-    category: "Web",
-    techStack: ["Next.js", "TypeScript", "MongoDB", "PWA"],
-    githubUrl: "https://github.com/soul-net00",
-    liveUrl: "https://smartreceipt.kmdev.vercel.app",
-    featured: true,
-    image: "/projects/receipt-system.jpg",
-    highlights: [
-      "Dual-mode operation: Works offline and syncs when online",
-      "Transaction storage with full audit trail",
-      "Professional receipt generation with VAT/discount support",
-      "Customer records and purchase history tracking",
-      "Print-ready receipts optimized for thermal printers",
-      "Dashboard with sales analytics and reporting"
-    ]
-  },
-  {
-    title: "E-Commerce Business Website",
-    description: "A clean, responsive business website with product showcase, contact forms, and order management built for a local client.",
-    category: "Web",
-    techStack: ["Next.js", "Tailwind CSS", "MongoDB"],
-    liveUrl: "https://clientbusiness.co.za",
-    featured: true,
-    image: "/projects/business-website.jpg",
-    highlights: [
-      "Responsive design for all devices",
-      "Product catalog with categories",
-      "Contact and inquiry forms",
-      "Admin panel for content management",
-      "SEO optimized for local search"
-    ]
-  },
-  {
-    title: "Property Listing Platform",
-    description: "A modern property listing website with admin controls, dynamic content management, and database integration.",
+    description: "A receipt management web app built for small businesses to create, store, and manage customer receipts. Supports offline and online use, making it useful even when internet access is unstable.",
     category: "Web",
     techStack: ["Next.js", "TypeScript", "MongoDB", "Tailwind CSS"],
-    githubUrl: "https://github.com/soul-net00",
+    githubUrl: "",
+    liveUrl: "",
     featured: true,
-    image: "/projects/property-listing.jpg",
+    image: "",
     highlights: [
-      "Property listings with image galleries",
-      "Search and filter functionality",
-      "Admin dashboard for content management",
-      "Responsive mobile-first design",
-      "Database-driven dynamic content"
+      "Create customer receipts",
+      "Offline and online functionality",
+      "Receipt history and customer records",
+      "Printable receipt layout",
+      "Payment and item tracking"
     ]
   },
   {
-    title: "Business Admin Dashboard",
-    description: "Custom admin dashboard system for managing business operations, inventory, and customer data.",
+    title: "Product Advertising Website",
+    description: "A responsive business website created for a customer to advertise products, display product information, and guide visitors toward making enquiries or purchases.",
     category: "Web",
-    techStack: ["Next.js", "MongoDB", "TypeScript"],
-    featured: false,
-    image: "/projects/admin-dashboard.jpg",
+    techStack: ["HTML", "CSS", "JavaScript", "Responsive Design"],
+    liveUrl: "",
+    featured: true,
+    image: "",
     highlights: [
-      "Secure admin authentication",
-      "CRUD operations for all business data",
-      "Real-time analytics dashboard",
-      "Exportable reports and data tables"
+      "Product showcase section",
+      "Mobile-friendly layout",
+      "Contact and enquiry options",
+      "Clean business-focused design",
+      "Easy product presentation"
     ]
   },
   {
-    title: "Marketplace System",
-    description: "A multi-vendor marketplace platform with approval workflows and moderation features.",
+    title: "Property Listing Website",
+    description: "A modern property listing platform designed to display property details, images, and enquiries. The system includes admin-focused features for managing listings and content.",
     category: "Web",
-    techStack: ["Next.js", "MongoDB", "TypeScript"],
-    featured: false,
-    image: "/projects/marketplace.jpg",
+    techStack: ["Next.js", "TypeScript", "MongoDB", "Tailwind CSS"],
+    githubUrl: "",
+    liveUrl: "",
+    featured: true,
+    image: "",
     highlights: [
-      "Vendor registration and approval system",
-      "Admin moderation panel",
-      "User verification badges",
-      "Report and flagging system"
+      "Property listing cards",
+      "Image-based property previews",
+      "Admin management structure",
+      "Responsive design",
+      "Database-ready content structure"
     ]
   },
   {
-    title: "BMI Explorer",
-    description: "An interactive web application for calculating and tracking Body Mass Index with clean user experience.",
+    title: "Private Admin Dashboard System",
+    description: "A private dashboard system built to manage website content, services, records, and admin actions. Details are available on request.",
     category: "Web",
-    techStack: ["HTML", "CSS", "JavaScript"],
-    githubUrl: "https://github.com/soul-net00/bmi_explore",
-    liveUrl: "https://soul-net00.github.io/bmi_explore/",
+    techStack: ["Next.js", "TypeScript", "MongoDB", "Tailwind CSS"],
     featured: false,
-    image: "/projects/bmi-explorer.jpg",
+    image: "",
     highlights: [
-      "Clean, intuitive interface",
-      "Instant BMI calculation",
-      "Category classification display",
-      "Responsive for all devices"
+      "Protected admin interface",
+      "Content management",
+      "Service management",
+      "Database-connected records",
+      "Responsive dashboard layout"
+    ]
+  },
+  {
+    title: "Private Marketplace System",
+    description: "A private marketplace-style system focused on business listings, approval workflows, and admin moderation. Details are available on request.",
+    category: "Web",
+    techStack: ["Next.js", "TypeScript", "MongoDB", "API Routes"],
+    featured: false,
+    image: "",
+    highlights: [
+      "Business listing structure",
+      "Approval and moderation workflow",
+      "Report handling concept",
+      "Admin control system",
+      "Scalable database design"
+    ]
+  },
+  {
+    title: "Private Business Tool",
+    description: "A custom private business tool designed to support internal workflows, improve organization, and manage business information efficiently. Details are available on request.",
+    category: "Web",
+    techStack: ["TypeScript", "MongoDB", "Tailwind CSS"],
+    featured: false,
+    image: "",
+    highlights: [
+      "Custom workflow support",
+      "Business data organization",
+      "Admin-focused tools",
+      "Database storage",
+      "Practical business use case"
     ]
   }
 ];
@@ -129,78 +130,184 @@ export const defaultSkills: SkillType[] = [
   // Networking
   { name: "VPN Configuration", percentage: 85, group: "Networking" },
   { name: "Proxy Systems", percentage: 78, group: "Networking" },
-  { name: "Network Setup & Troubleshooting", percentage: 82, group: "Networking" },
+  { name: "Network Setup", percentage: 82, group: "Networking" },
+  { name: "Network Troubleshooting", percentage: 80, group: "Networking" },
   { name: "Cisco Packet Tracer", percentage: 75, group: "Networking" },
-  { name: "WiFi Optimization", percentage: 80, group: "Networking" },
-  
+  { name: "Data Communication", percentage: 72, group: "Networking" },
+
   // Web Development
-  { name: "Next.js", percentage: 78, group: "Web Development" },
-  { name: "TypeScript", percentage: 75, group: "Web Development" },
-  { name: "JavaScript", percentage: 80, group: "Web Development" },
-  { name: "Tailwind CSS", percentage: 82, group: "Web Development" },
-  { name: "Responsive Design", percentage: 85, group: "Web Development" },
+  { name: "HTML", percentage: 90, group: "Web Development" },
+  { name: "CSS", percentage: 88, group: "Web Development" },
+  { name: "JavaScript", percentage: 82, group: "Web Development" },
+  { name: "TypeScript", percentage: 78, group: "Web Development" },
+  { name: "Next.js", percentage: 75, group: "Web Development" },
+  { name: "Tailwind CSS", percentage: 85, group: "Web Development" },
+  { name: "Responsive Design", percentage: 88, group: "Web Development" },
   { name: "API Integration", percentage: 72, group: "Web Development" },
-  { name: "PWA Development", percentage: 68, group: "Web Development" },
-  
-  // Data & Systems
-  { name: "MongoDB", percentage: 75, group: "Data & Systems" },
-  { name: "SQL & Query Writing", percentage: 70, group: "Data & Systems" },
-  { name: "Excel & Data Analysis", percentage: 78, group: "Data & Systems" },
-  { name: "Database Design", percentage: 72, group: "Data & Systems" },
-  
-  // System & Hardware
-  { name: "Computer Setup & Assembly", percentage: 85, group: "System & Hardware" },
-  { name: "Windows System Configuration", percentage: 88, group: "System & Hardware" },
+
+  // Data & Databases
+  { name: "MongoDB", percentage: 75, group: "Database" },
+  { name: "SQL Server Basics", percentage: 70, group: "Database" },
+  { name: "Database Design", percentage: 72, group: "Database" },
+  { name: "Query Writing", percentage: 68, group: "Database" },
+  { name: "Excel Data Handling", percentage: 80, group: "Database" },
+  { name: "Data Organization", percentage: 82, group: "Database" },
+
+  // Systems & Hardware
+  { name: "Computer Setup", percentage: 88, group: "System & Hardware" },
+  { name: "System Configuration", percentage: 85, group: "System & Hardware" },
   { name: "Hardware Troubleshooting", percentage: 82, group: "System & Hardware" },
-  { name: "Virus Removal & Security", percentage: 75, group: "System & Hardware" },
-  
-  // Analysis
+  { name: "Software Setup", percentage: 85, group: "System & Hardware" },
+  { name: "Technical Support", percentage: 88, group: "System & Hardware" },
+
+  // System Analysis
   { name: "System Analysis", percentage: 78, group: "Analysis" },
-  { name: "Business Process Optimization", percentage: 72, group: "Analysis" },
-  { name: "Problem Solving", percentage: 85, group: "Analysis" }
+  { name: "Business Process Analysis", percentage: 75, group: "Analysis" },
+  { name: "Identifying Weaknesses", percentage: 80, group: "Analysis" },
+  { name: "Business Improvement", percentage: 72, group: "Analysis" },
+  { name: "Problem-Solving", percentage: 85, group: "Analysis" }
 ];
 
 export const defaultServices: ServiceType[] = [
   {
     name: "Website Development",
-    description: "Modern, responsive websites built with Next.js and Tailwind CSS. Perfect for portfolios, businesses, and landing pages.",
+    description: "Modern, responsive websites for individuals, startups, and small businesses. Helps businesses build a professional online presence.",
     priceFrom: 800,
     active: true,
-    includes: ["Responsive design", "SEO optimization", "Fast loading", "Contact forms", "Mobile-friendly"]
+    image: "",
+    includes: [
+      "Responsive layout",
+      "Clean UI design",
+      "Contact/WhatsApp integration",
+      "Basic SEO-friendly structure",
+      "Mobile-friendly"
+    ]
   },
   {
     name: "Web Application Development",
-    description: "Custom web applications with database integration, admin panels, and dynamic features. From receipt systems to admin dashboards.",
+    description: "Custom web systems with dashboards, database integration, and dynamic features. Useful for businesses that need more than a static website.",
     priceFrom: 1500,
     active: true,
-    includes: ["Database integration", "Admin dashboard", "User authentication", "Data management", "Custom features"]
+    image: "",
+    includes: [
+      "Admin dashboards",
+      "Database connection",
+      "Forms and records",
+      "Custom business logic",
+      "User management"
+    ]
   },
   {
     name: "Network Setup & Configuration",
-    description: "Professional network setup for homes and small businesses. Router configuration, WiFi optimization, and troubleshooting.",
+    description: "Network setup and troubleshooting for small environments and practical IT needs. Helps improve connectivity, structure, and reliability.",
     priceFrom: 400,
     active: true,
-    includes: ["Router setup", "WiFi optimization", "Security configuration", "Troubleshooting", "Network diagram"]
+    image: "",
+    includes: [
+      "Network planning",
+      "Router configuration",
+      "Troubleshooting",
+      "Connectivity support",
+      "Basic documentation"
+    ]
   },
   {
     name: "VPN & Proxy Setup",
-    description: "Secure VPN and proxy configuration for remote work, privacy, and network security. Corporate and personal solutions.",
+    description: "Setup and support for VPNs, proxy systems, and secure connection workflows. Helps users connect more securely and manage access better.",
     priceFrom: 500,
     active: true,
-    includes: ["VPN setup", "Proxy configuration", "Security hardening", "Remote access", "Documentation"]
+    image: "",
+    includes: [
+      "VPN setup",
+      "Proxy configuration",
+      "Connection testing",
+      "Security guidance",
+      "Documentation"
+    ]
   },
   {
-    name: "System Analysis & Optimization",
-    description: "Analyze your business systems, identify weaknesses, and implement technology solutions for improved efficiency.",
+    name: "System Analysis & Business Optimization",
+    description: "Reviewing business systems to identify weaknesses and suggest improvements. Helps businesses improve workflow and use better digital systems.",
     priceFrom: 600,
     active: true,
-    includes: ["System audit", "Process mapping", "Improvement plan", "Implementation", "Training support"]
+    image: "",
+    includes: [
+      "Business process review",
+      "Weakness identification",
+      "Improvement suggestions",
+      "System planning",
+      "Implementation guidance"
+    ]
   },
   {
     name: "Computer Setup & Technical Support",
-    description: "Complete computer setup, hardware troubleshooting, and technical support. Virus removal, OS installation, and performance optimization.",
+    description: "Computer setup, software installation, troubleshooting, and general IT support. Helps users get devices working properly and efficiently.",
     priceFrom: 250,
     active: true,
-    includes: ["Hardware diagnostics", "OS installation", "Virus removal", "Performance tuning", "Software setup"]
+    image: "",
+    includes: [
+      "Device setup",
+      "Software installation",
+      "Troubleshooting",
+      "Basic maintenance",
+      "Performance optimization"
+    ]
   }
 ];
+
+export async function seedDatabase() {
+  const { connectToDatabase } = await import("@/lib/mongodb");
+  const { Project } = await import("@/models/Project");
+  const { Service } = await import("@/models/Service");
+  const { Skill } = await import("@/models/Skill");
+  const { SiteSettings } = await import("@/models/SiteSettings");
+
+  try {
+    await connectToDatabase();
+    console.log("🌱 Starting database seed...");
+
+    // Seed SiteSettings
+    const existingSettings = await SiteSettings.findOne();
+    if (!existingSettings) {
+      await SiteSettings.create(defaultSiteSettings);
+      console.log("✅ SiteSettings seeded");
+    } else {
+      console.log("ℹ️ SiteSettings already exists, skipping");
+    }
+
+    // Seed Projects
+    for (const project of defaultProjects) {
+      const exists = await Project.findOne({ title: project.title });
+      if (!exists) {
+        await Project.create(project);
+        console.log(`✅ Project: ${project.title}`);
+      }
+    }
+    console.log("ℹ️ Projects seeded (existing skipped)");
+
+    // Seed Skills
+    for (const skill of defaultSkills) {
+      const exists = await Skill.findOne({ name: skill.name });
+      if (!exists) {
+        await Skill.create(skill);
+        console.log(`✅ Skill: ${skill.name}`);
+      }
+    }
+    console.log("ℹ️ Skills seeded (existing skipped)");
+
+    // Seed Services
+    for (const service of defaultServices) {
+      const exists = await Service.findOne({ name: service.name });
+      if (!exists) {
+        await Service.create(service);
+        console.log(`✅ Service: ${service.name}`);
+      }
+    }
+    console.log("ℹ️ Services seeded (existing skipped)");
+
+    console.log("🌱 Database seed complete!");
+  } catch (error) {
+    console.error("❌ Seed error:", error);
+    throw error;
+  }
+}
