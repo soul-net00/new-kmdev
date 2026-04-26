@@ -28,9 +28,9 @@ export function Skills({ skills }: { skills: SkillType[] }) {
       <h2 className="text-xl font-bold md:text-4xl">Technical Expertise</h2>
       
       <div className="relative mt-6 md:mt-8">
-        <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:pb-0">
+        <div className="flex snap-x snap-mandatory overflow-x-hidden pb-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:pb-0">
           {groupsWithSkills.map((group) => (
-            <div key={group} className="w-[90vw] snap-center shrink-0 sm:w-auto">
+            <div key={group} className="min-w-full w-full flex-shrink-0 px-1 sm:min-w-0 sm:w-auto sm:px-0">
               <motion.div
                 className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:rounded-3xl lg:p-6"
               >

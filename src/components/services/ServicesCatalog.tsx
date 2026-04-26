@@ -18,9 +18,9 @@ export function ServicesCatalog({ services, whatsapp }: { services: ServiceType[
     <>
       <div className="grid gap-8 xl:grid-cols-[1fr,320px]">
         <div className="relative">
-          <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 sm:grid sm:snap-none sm:overflow-visible sm:grid-cols-3 sm:gap-4 sm:px-0 sm:pb-0">
+          <div className="flex snap-x snap-mandatory overflow-x-hidden px-2 pb-4 sm:grid sm:snap-none sm:overflow-visible sm:grid-cols-3 sm:gap-4 sm:px-0 sm:pb-0">
             {services.map((service) => (
-              <div key={service._id || service.name} className="w-[90vw] snap-center shrink-0 sm:w-auto">
+              <div key={service._id || service.name} className="min-w-full w-full flex-shrink-0 px-1 sm:min-w-0 sm:w-auto sm:px-0">
                 <ServiceCard
                   service={service}
                   onAddToCart={addItem}

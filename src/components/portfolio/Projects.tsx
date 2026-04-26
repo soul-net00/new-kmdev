@@ -58,9 +58,9 @@ export function Projects({ projects }: { projects: ProjectType[] }) {
       </div>
       
       <div className={`relative ${shareData ? "pointer-events-none" : ""}`}>
-        <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:pb-0">
+        <div className="flex snap-x snap-mandatory overflow-x-hidden pb-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:pb-0">
           {filtered.map((project) => (
-            <div key={project._id} className="w-[90vw] snap-center shrink-0 sm:w-auto">
+            <div key={project._id} className="min-w-full w-full flex-shrink-0 px-1 sm:min-w-0 sm:w-auto sm:px-0">
               <ProjectCard 
                 project={project} 
                 onShare={handleShare}
