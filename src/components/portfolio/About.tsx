@@ -8,9 +8,9 @@ export function About({ about }: { about: AboutContent }) {
     <section id="about" className="mx-auto max-w-6xl px-4 py-12 md:py-16">
       <p className="mb-2 font-mono text-xs uppercase tracking-[0.3em] text-emerald-600">About</p>
       <h2 className="text-2xl font-bold md:text-4xl">Real IT solutions, built with purpose.</h2>
-      <div className="mt-6 grid gap-6 md:mt-8 md:grid-cols-[0.8fr,1.2fr]">
+      <div className="mt-6 grid gap-6 md:mt-8 md:grid-cols-[0.5fr,1.5fr]">
         {about.image || "/profile.jpg" ? (
-          <div className="relative w-full overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-100 to-slate-100 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:to-slate-950 md:rounded-3xl aspect-[3/4]">
+          <div className="relative w-full overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-100 to-slate-100 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:to-slate-950 md:rounded-3xl aspect-square">
             <img 
               src={about.image || "/profile.jpg"} 
               alt="Kgomotso Mamogale" 
