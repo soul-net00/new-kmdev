@@ -170,88 +170,116 @@ export const defaultSkills: SkillType[] = [
 
 export const defaultServices: ServiceType[] = [
   {
-    name: "Website Development",
-    description: "Modern, responsive websites for individuals, startups, and small businesses. Helps businesses build a professional online presence.",
-    priceFrom: 800,
-    active: true,
-    image: "",
-    includes: [
-      "Responsive layout",
-      "Clean UI design",
-      "Contact/WhatsApp integration",
-      "Basic SEO-friendly structure",
-      "Mobile-friendly"
-    ]
-  },
-  {
-    name: "Web Application Development",
-    description: "Custom web systems with dashboards, database integration, and dynamic features. Useful for businesses that need more than a static website.",
-    priceFrom: 1500,
-    active: true,
-    image: "",
-    includes: [
-      "Admin dashboards",
-      "Database connection",
-      "Forms and records",
-      "Custom business logic",
-      "User management"
-    ]
-  },
-  {
-    name: "Network Setup & Configuration",
-    description: "Network setup and troubleshooting for small environments and practical IT needs. Helps improve connectivity, structure, and reliability.",
-    priceFrom: 400,
-    active: true,
-    image: "",
-    includes: [
-      "Network planning",
-      "Router configuration",
-      "Troubleshooting",
-      "Connectivity support",
-      "Basic documentation"
-    ]
-  },
-  {
-    name: "VPN & Proxy Setup",
-    description: "Setup and support for VPNs, proxy systems, and secure connection workflows. Helps users connect more securely and manage access better.",
+    name: "Basic Website",
+    description: "Simple, clean websites for small businesses and personal use. Includes essential pages and mobile-friendly design.",
     priceFrom: 500,
     active: true,
     image: "",
-    includes: [
-      "VPN setup",
-      "Proxy configuration",
-      "Connection testing",
-      "Security guidance",
-      "Documentation"
-    ]
+    includes: ["Responsive layout", "Contact form", "Mobile-friendly", "3-5 pages"]
   },
   {
-    name: "System Analysis & Business Optimization",
-    description: "Reviewing business systems to identify weaknesses and suggest improvements. Helps businesses improve workflow and use better digital systems.",
+    name: "Business Website",
+    description: "Professional websites for businesses with modern design, about page, services section, and contact options.",
+    priceFrom: 800,
+    active: true,
+    image: "",
+    includes: ["Modern design", "About page", "Services section", "Contact integration", "Social links"]
+  },
+  {
+    name: "E-Commerce Store",
+    description: "Online store setup with product listings, cart functionality, WhatsApp checkout. Simple and effective for selling online.",
+    priceFrom: 1200,
+    active: true,
+    image: "",
+    includes: ["Product listings", "Shopping cart", "WhatsApp checkout", "Product categories", "Mobile responsive"]
+  },
+  {
+    name: "Web Application",
+    description: "Custom web systems with admin panels, databases, and business logic. For businesses needing more than websites.",
+    priceFrom: 1500,
+    active: true,
+    image: "",
+    includes: ["Admin dashboard", "Database storage", "CRUD operations", "User accounts", "Custom features"]
+  },
+  {
+    name: "Network Setup",
+    description: "Small office and home network setup, router configuration, and basic network structure for better connectivity.",
+    priceFrom: 350,
+    active: true,
+    image: "",
+    includes: ["Router setup", "WiFi configuration", "Device connections", "Basic security", "Testing"]
+  },
+  {
+    name: "VPN Setup",
+    description: "Secure VPN setup for remote access and private browsing. Helps protect your connection and access resources securely.",
+    priceFrom: 450,
+    active: true,
+    image: "",
+    includes: ["VPN installation", "Secure configuration", "Testing", "Connection guide", "Security tips"]
+  },
+  {
+    name: "Proxy Configuration",
+    description: "Proxy system setup for enhanced privacy, multiple device access, and improved network management.",
+    priceFrom: 400,
+    active: true,
+    image: "",
+    includes: ["Proxy setup", "Multi-device config", "Access control", "Testing", "Documentation"]
+  },
+  {
+    name: "System Optimization",
+    description: "Computer optimization for better performance. Speed up devices, clean up systems, and improve overall efficiency.",
+    priceFrom: 200,
+    active: true,
+    image: "",
+    includes: ["Performance tune-up", "Disk cleanup", "Startup optimization", "Virus scan", "Recommendations"]
+  },
+  {
+    name: "IT Support",
+    description: "On-demand IT support for home and small business. Troubleshooting, configurations, and technical assistance.",
+    priceFrom: 150,
+    active: true,
+    image: "",
+    includes: ["Remote assistance", "Troubleshooting", "Configuration help", "Technical advice", "Follow-up support"]
+  },
+  {
+    name: "Database Setup",
+    description: "Database design and setup for web applications. Includes schema design, connection setup, and basic queries.",
+    priceFrom: 500,
+    active: true,
+    image: "",
+    includes: ["Schema design", "Database creation", "Connection setup", "Basic queries", "Documentation"]
+  },
+  {
+    name: "API Development",
+    description: "RESTful API development for web applications. Enables communication between frontend and backend systems.",
     priceFrom: 600,
     active: true,
     image: "",
-    includes: [
-      "Business process review",
-      "Weakness identification",
-      "Improvement suggestions",
-      "System planning",
-      "Implementation guidance"
-    ]
+    includes: ["REST endpoints", "Data handling", "Authentication", "Documentation", "Testing"]
   },
   {
-    name: "Computer Setup & Technical Support",
-    description: "Computer setup, software installation, troubleshooting, and general IT support. Helps users get devices working properly and efficiently.",
+    name: "Maintenance Plan",
+    description: "Monthly website and system maintenance. Updates, backups, monitoring, and ongoing support for peace of mind.",
     priceFrom: 250,
     active: true,
     image: "",
-    includes: [
-      "Device setup",
-      "Software installation",
-      "Troubleshooting",
-      "Basic maintenance",
-      "Performance optimization"
-    ]
+    includes: ["Monthly updates", "Backup management", "Security monitoring", "Uptime checks", "Priority support"]
+  },
+  {
+    name: "Consultation",
+    description: "IT and web development consultation. Advice on technology decisions, system planning, and business improvement.",
+    priceFrom: 200,
+    active: true,
+    image: "",
+    includes: ["1-hour session", "Technology advice", "System planning", "Recommendations", "Follow-up email"]
+  },
+  {
+    name: "Data Management",
+    description: "Excel and data organization services. Clean up, structure, and organize your business data for better use.",
+    priceFrom: 250,
+    active: true,
+    image: "",
+    includes: ["Data cleanup", "Spreadsheet organization", "Formulas/functions", "Dashboard creation", "Automation tips"]
   }
 ];
 
