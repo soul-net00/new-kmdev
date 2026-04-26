@@ -18,10 +18,10 @@ export function ServiceCard({ service, onAddToCart, onRequest, whatsapp }: Servi
 
   return (
     <div 
-      className="h-72 [perspective:1000px] sm:h-80 cursor-pointer"
+      className="min-h-[320px] sm:min-h-[280px] cursor-pointer"
       onClick={() => setFlipped((value) => !value)}
     >
-      <div className={`relative flex h-full w-full flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all duration-300 hover:border-emerald-400/50 hover:shadow-[0_0_35px_rgba(16,185,129,0.35)] hover:scale-[1.02] dark:border-slate-800 dark:bg-slate-900 sm:p-6 active:scale-[0.98] ${flipped ? "shadow-md" : ""}`}>
+      <div className={`relative flex h-full w-full flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6`}>
         <div className="flex-1">
           <div className="mb-3 sm:mb-4">
             <PreviewableImage
@@ -38,7 +38,7 @@ export function ServiceCard({ service, onAddToCart, onRequest, whatsapp }: Servi
         <p className="text-xs font-semibold text-emerald-600 sm:text-sm">Tap to view pricing</p>
       </div>
 
-      <div className="absolute inset-0 flex flex-col justify-between rounded-2xl border border-emerald-500/30 bg-slate-950 p-4 text-white shadow-lg dark:bg-slate-900 sm:p-6">
+      <div className="absolute inset-0 flex flex-col justify-between rounded-2xl border border-emerald-500/30 bg-slate-950 p-4 text-white shadow-lg dark:bg-slate-900 overflow-y-auto sm:p-6">
         <div>
           <p className="text-xs uppercase tracking-[0.3em] text-emerald-400">Starting from</p>
           <h3 className="mt-1 text-2xl font-black sm:text-3xl">{currency(service.priceFrom)}</h3>
@@ -46,26 +46,26 @@ export function ServiceCard({ service, onAddToCart, onRequest, whatsapp }: Servi
             {(service.includes || []).slice(0, 3).map((item) => <li key={item}>✓ {item}</li>)}
           </ul>
         </div>
-        <div className="grid gap-2">
+        <div className="flex flex-col gap-2 mt-2">
           <button
             onClick={(event) => {
               event.stopPropagation();
               onRequest(service);
             }}
-            className="rounded-xl bg-emerald-500 py-2 text-xs font-semibold text-slate-950 transition-colors hover:bg-emerald-400 sm:py-3 sm:text-sm"
+            className="w-full rounded-xl bg-emerald-500 py-3 text-sm font-semibold text-slate-950 transition-colors hover:bg-emerald-400"
           >
             Request in dashboard
           </button>
           <a 
             href={whatsappLink(whatsapp, message)} 
             target="_blank" 
-            className="rounded-xl bg-[#25D366] py-2 text-center text-xs font-semibold text-white transition-colors hover:bg-[#22b84a] sm:py-3 sm:text-sm"
+            className="w-full rounded-xl bg-[#25D366] py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-[#22b84a]"
           >
             Order via WhatsApp
           </a>
           <button 
             onClick={(event) => { event.stopPropagation(); onAddToCart(service); }} 
-            className="rounded-xl border border-slate-700 py-2 text-xs transition-colors hover:border-emerald-500 hover:text-emerald-400 sm:py-3 sm:text-sm"
+            className="w-full rounded-xl border border-slate-700 py-3 text-sm transition-colors hover:border-emerald-500 hover:text-emerald-400"
           >
             Add to cart
           </button>
