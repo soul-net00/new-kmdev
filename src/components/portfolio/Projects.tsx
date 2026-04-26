@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import type { ProjectType } from "@/types";
 import { ProjectCard } from "./ProjectCard";
 import { ShareModal } from "@/components/ui/ShareModal";
@@ -18,6 +18,7 @@ export function Projects({ projects }: { projects: ProjectType[] }) {
   const [active, setActive] = useState<(typeof filters)[number]>("All");
   const [currentPage, setCurrentPage] = useState(0);
   const [shareData, setShareData] = useState<ShareData | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const filtered = useMemo(() => active === "All" ? projects : projects.filter((project) => project.category === active), [active, projects]);
   const availableFilters = useMemo(() => filters.filter((f) => f === "All" || projects.some((p) => p.category === f)), [projects]);
 
@@ -25,9 +26,14 @@ export function Projects({ projects }: { projects: ProjectType[] }) {
 
   const totalMobilePages = Math.ceil(filtered.length / ITEMS_PER_PAGE_MOBILE);
   const totalDesktopPages = Math.ceil(filtered.length / ITEMS_PER_PAGE_DESKTOP);
+  const desktopProjects = filtered.slice(currentPage * ITEMS_PER_PAGE_DESKTOP, (currentPage + 1) * ITEMS_PER_PAGE_DESKTOP);
 
   const goToPage = useCallback((page: number) => {
     setCurrentPage(page);
+    if (scrollRef.current) {
+      const cardWidth = scrollRef.current.clientWidth;
+      scrollRef.current.scrollTo({ left: page * cardWidth, behavior: "smooth" });
+    }
   }, []);
 
   const handleFilterChange = useCallback((filter: typeof active) => {
@@ -43,11 +49,19 @@ export function Projects({ projects }: { projects: ProjectType[] }) {
     setShareData(null);
   }, []);
 
-  const mobileProjects = filtered.slice(currentPage * ITEMS_PER_PAGE_MOBILE, (currentPage + 1) * ITEMS_PER_PAGE_MOBILE);
-  const desktopProjects = filtered.slice(currentPage * ITEMS_PER_PAGE_DESKTOP, (currentPage + 1) * ITEMS_PER_PAGE_DESKTOP);
+  const handleScroll = useCallback(() => {
+    if (scrollRef.current && window.innerWidth < 1024) {
+      const scrollLeft = scrollRef.current.scrollLeft;
+      const cardWidth = scrollRef.current.clientWidth;
+      const newPage = Math.round(scrollLeft / cardWidth);
+      if (newPage !== currentPage && newPage >= 0 && newPage < totalMobilePages) {
+        setCurrentPage(newPage);
+      }
+    }
+  }, [currentPage, totalMobilePages]);
 
   return (
-    <section id="projects" className="mx-auto max-w-6xl px-4 py-10 md:py-16 overflow-hidden">
+    <section id="projects" className="mx-auto max-w-6xl px-4 py-10 md:py-16">
       <p className="mb-2 font-mono text-xs uppercase tracking-[0.3em] text-emerald-600">Projects</p>
       <div className="mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-xl font-bold md:text-4xl">Featured work</h2>
@@ -61,19 +75,17 @@ export function Projects({ projects }: { projects: ProjectType[] }) {
       </div>
       
       <div className={`relative ${shareData ? "pointer-events-none" : ""}`}>
-        <div className="flex snap-x snap-mandatory overflow-x-hidden pb-4 lg:snap-none lg:overflow-visible">
-          <div className="flex snap-x snap-mandatory overflow-x-visible pb-4 sm:hidden w-full">
-            {filtered.map((project) => (
-              <div key={project._id} className="min-w-full w-full flex-shrink-0 px-1">
-                <ProjectCard project={project} onShare={handleShare} />
-              </div>
-            ))}
-          </div>
-          <div className="hidden sm:grid lg:grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
-            {desktopProjects.map((project) => (
-              <ProjectCard key={project._id} project={project} onShare={handleShare} />
-            ))}
-          </div>
+        <div 
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className="flex snap-x snap-mandatory overflow-x-auto overflow-y-hidden pb-4 -mx-4 px-4 lg:overflow-visible lg:mx-0 lg:px-0 lg:snap-none"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
+          {filtered.map((project) => (
+            <div key={project._id} className="w-[85vw] flex-shrink-0 snap-center pr-2 sm:w-auto sm:pr-0 lg:basis-1/3">
+              <ProjectCard project={project} onShare={handleShare} />
+            </div>
+          ))}
         </div>
         
         {totalDesktopPages > 1 && (
@@ -101,19 +113,19 @@ export function Projects({ projects }: { projects: ProjectType[] }) {
           {Array.from({ length: totalMobilePages }).map((_, i) => (
             <button 
               key={i} 
-              onClick={() => !shareData && goToPage(i)}
+              onClick={() => goToPage(i)}
               disabled={!!shareData}
               className={`h-2 w-2 rounded-full transition-colors sm:hidden ${currentPage === i ? "bg-emerald-500" : "bg-slate-300"} ${shareData ? "opacity-50" : ""}`}
-              aria-label={`Go to page ${i + 1}`}
+              aria-label={`Go to slide ${i + 1}`}
             />
           ))}
           {Array.from({ length: totalDesktopPages }).map((_, i) => (
             <button 
               key={`desktop-${i}`} 
-              onClick={() => !shareData && goToPage(i)}
+              onClick={() => goToPage(i)}
               disabled={!!shareData}
               className={`h-2 w-2 rounded-full transition-colors hidden sm:block lg:block ${currentPage === i ? "bg-emerald-500" : "bg-slate-300"} ${shareData ? "opacity-50" : ""}`}
-              aria-label={`Go to desktop page ${i + 1}`}
+              aria-label={`Go to desktop slide ${i + 1}`}
             />
           ))}
         </div>
