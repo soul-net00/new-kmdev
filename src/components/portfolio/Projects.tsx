@@ -3,13 +3,20 @@
 import { useMemo, useState, useCallback } from "react";
 import type { ProjectType } from "@/types";
 import { ProjectCard } from "./ProjectCard";
+import { ShareModal } from "@/components/ui/ShareModal";
 
 const filters = ["All", "Web", "Desktop", "Database", "Other"] as const;
 const ITEMS_PER_PAGE = 3;
 
+interface ShareData {
+  title: string;
+  url: string;
+}
+
 export function Projects({ projects }: { projects: ProjectType[] }) {
   const [active, setActive] = useState<(typeof filters)[number]>("All");
   const [currentPage, setCurrentPage] = useState(0);
+  const [shareData, setShareData] = useState<ShareData | null>(null);
   const filtered = useMemo(() => active === "All" ? projects : projects.filter((project) => project.category === active), [active, projects]);
   const availableFilters = useMemo(() => filters.filter((f) => f === "All" || projects.some((p) => p.category === f)), [projects]);
 
@@ -27,6 +34,14 @@ export function Projects({ projects }: { projects: ProjectType[] }) {
     setCurrentPage(0);
   }, []);
 
+  const handleShare = useCallback((project: ProjectType, url: string) => {
+    setShareData({ title: project.title, url });
+  }, []);
+
+  const closeShare = useCallback(() => {
+    setShareData(null);
+  }, []);
+
   return (
     <section id="projects" className="mx-auto max-w-6xl px-4 py-12 md:py-16">
       <p className="mb-2 font-mono text-xs uppercase tracking-[0.3em] text-emerald-600">Projects</p>
@@ -41,10 +56,14 @@ export function Projects({ projects }: { projects: ProjectType[] }) {
         </div>
       </div>
       
-      <div className="relative">
+      <div className={`relative ${shareData ? "pointer-events-none" : ""}`}>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {visibleProjects.map((project) => (
-            <ProjectCard key={project._id} project={project} />
+            <ProjectCard 
+              key={project._id} 
+              project={project} 
+              onShare={handleShare}
+            />
           ))}
         </div>
         
@@ -52,7 +71,7 @@ export function Projects({ projects }: { projects: ProjectType[] }) {
           <>
             <button 
               onClick={() => goToPage(currentPage - 1)} 
-              disabled={currentPage === 0}
+              disabled={currentPage === 0 || !!shareData}
               className="absolute left-0 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white shadow-md transition-all hover:border-emerald-400 disabled:opacity-30 dark:border-slate-700 dark:bg-slate-900 hidden md:flex" 
               aria-label="Previous"
             >
@@ -60,7 +79,7 @@ export function Projects({ projects }: { projects: ProjectType[] }) {
             </button>
             <button 
               onClick={() => goToPage(currentPage + 1)} 
-              disabled={currentPage === totalPages - 1}
+              disabled={currentPage === totalPages - 1 || !!shareData}
               className="absolute right-0 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white shadow-md transition-all hover:border-emerald-400 disabled:opacity-30 dark:border-slate-700 dark:bg-slate-900 hidden md:flex" 
               aria-label="Next"
             >
@@ -74,14 +93,22 @@ export function Projects({ projects }: { projects: ProjectType[] }) {
             {Array.from({ length: totalPages }).map((_, i) => (
               <button 
                 key={i} 
-                onClick={() => goToPage(i)}
-                className={`h-2 w-2 rounded-full transition-colors ${currentPage === i ? "bg-emerald-500" : "bg-slate-300"}`}
+                onClick={() => !shareData && goToPage(i)}
+                disabled={!!shareData}
+                className={`h-2 w-2 rounded-full transition-colors ${currentPage === i ? "bg-emerald-500" : "bg-slate-300"} ${shareData ? "opacity-50" : ""}`}
                 aria-label={`Go to page ${i + 1}`}
               />
             ))}
           </div>
         )}
       </div>
+
+      <ShareModal 
+        open={!!shareData} 
+        onClose={closeShare}
+        url={shareData?.url || ""}
+        title={shareData?.title || ""}
+      />
     </section>
   );
 }

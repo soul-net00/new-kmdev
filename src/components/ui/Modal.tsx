@@ -27,11 +27,11 @@ export function Modal({ open, onClose, title, children }: PropsWithChildren<Moda
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/60 p-4 pointer-events-auto"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div 
-        className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-soft dark:bg-slate-900 pointer-events-auto"
+        className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl pointer-events-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">

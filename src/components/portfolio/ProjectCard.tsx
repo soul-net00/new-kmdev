@@ -1,14 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { ShareModal } from "@/components/ui/ShareModal";
 import { PreviewableImage } from "@/components/ui/PreviewableImage";
 import type { ProjectType } from "@/types";
 
-export function ProjectCard({ project }: { project: ProjectType }) {
-  const [open, setOpen] = useState(false);
+interface ProjectCardProps {
+  project: ProjectType;
+  onShare?: (project: ProjectType, url: string) => void;
+}
+
+export function ProjectCard({ project, onShare }: ProjectCardProps) {
   const [showDetails, setShowDetails] = useState(false);
-  const url = project.liveUrl || project.githubUrl || "https://kmdev.example.com";
+
+  const handleShare = () => {
+    if (onShare) {
+      const url = project.liveUrl || project.githubUrl || "https://kmdev.example.com";
+      onShare(project, url);
+    }
+  };
 
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all duration-300 hover:border-emerald-400/50 hover:shadow-[0_0_35px_rgba(16,185,129,0.35)] hover:scale-[1.02] dark:border-slate-800 dark:bg-slate-900 sm:p-5 active:scale-[0.98]">
@@ -52,9 +61,8 @@ export function ProjectCard({ project }: { project: ProjectType }) {
       <div className="mt-4 flex gap-3 text-xs sm:text-sm">
         {project.githubUrl && <a href={project.githubUrl} target="_blank" className="font-semibold text-emerald-600">GitHub ↗</a>}
         {project.liveUrl && <a href={project.liveUrl} target="_blank" className="font-semibold text-slate-700 dark:text-slate-200">Live Demo ↗</a>}
-        <button onClick={() => setOpen(true)} className="font-semibold text-slate-500">Share</button>
+        <button onClick={handleShare} className="font-semibold text-slate-500">Share</button>
       </div>
-      <ShareModal open={open} onClose={() => setOpen(false)} url={url} title={project.title} />
     </article>
   );
 }
