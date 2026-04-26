@@ -18,6 +18,9 @@ export function ServiceEditor() {
   const [services, setServices] = useState<ServiceType[]>([]);
   const [form, setForm] = useState<ServiceType>(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectAll, setSelectAll] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   async function loadServices() {
     const data = await fetch("/api/services").then((res) => res.json());
@@ -45,6 +48,39 @@ export function ServiceEditor() {
     await loadServices();
   }
 
+  async function deleteSelected() {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`Delete ${selectedIds.size} selected service(s)?`)) return;
+    
+    setDeleting(true);
+    for (const id of selectedIds) {
+      await fetch(`/api/services/${id}`, { method: "DELETE" });
+    }
+    setSelectedIds(new Set());
+    setSelectAll(false);
+    await loadServices();
+    setDeleting(false);
+  }
+
+  function toggleSelect(id: string) {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  }
+
+  function toggleSelectAll() {
+    if (selectAll) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(services.map((s) => s._id || "")));
+    }
+    setSelectAll(!selectAll);
+  }
+
   return (
     <div className="space-y-6">
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft dark:border-slate-800 dark:bg-slate-900">
@@ -68,14 +104,36 @@ export function ServiceEditor() {
           {editingId && <Button variant="secondary" onClick={() => { setEditingId(null); setForm(emptyForm); }}>Cancel edit</Button>}
         </div>
       </div>
+
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft dark:border-slate-800 dark:bg-slate-900">
-        <h3 className="mb-4 text-lg font-semibold">Existing services</h3>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+          <h3 className="text-lg font-semibold">Existing services ({services.length})</h3>
+          <div className="flex items-center gap-2">
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={selectAll} onChange={toggleSelectAll} className="rounded" />
+              Select all
+            </label>
+            {selectedIds.size > 0 && (
+              <Button variant="ghost" className="text-red-500" onClick={deleteSelected} disabled={deleting}>
+                Delete {selectedIds.size} selected
+              </Button>
+            )}
+          </div>
+        </div>
         <div className="space-y-3">
           {services.map((service) => (
-            <div key={service._id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 p-4 dark:border-slate-800">
-              <div>
-                <div className="font-semibold">{service.name}</div>
-                <div className="text-sm text-slate-500">R {service.priceFrom} · {service.active ? "Active" : "Hidden"}</div>
+            <div key={service._id} className={`flex flex-wrap items-center justify-between gap-3 rounded-2xl border p-4 dark:border-slate-800 ${selectedIds.has(service._id || "") ? "border-red-500 bg-red-50 dark:bg-red-900/20" : "border-slate-200"}`}>
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.has(service._id || "")}
+                  onChange={() => toggleSelect(service._id || "")}
+                  className="rounded"
+                />
+                <div>
+                  <div className="font-semibold">{service.name}</div>
+                  <div className="text-sm text-slate-500">R {service.priceFrom} · {service.active ? "Active" : "Hidden"}</div>
+                </div>
               </div>
               <div className="flex gap-2">
                 <Button variant="secondary" onClick={() => { setEditingId(service._id || null); setForm({ ...service, includes: service.includes || [] }); }}>Edit</Button>

@@ -22,6 +22,8 @@ export function ProjectEditor() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectAll, setSelectAll] = useState(false);
 
   async function loadProjects() {
     setLoading(true);
@@ -56,6 +58,39 @@ export function ProjectEditor() {
     await loadProjects();
   }
 
+  async function deleteSelected() {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`Delete ${selectedIds.size} selected project(s)?`)) return;
+    
+    setSaving(true);
+    for (const id of selectedIds) {
+      await fetch(`/api/projects/${id}`, { method: "DELETE" });
+    }
+    setSelectedIds(new Set());
+    setSelectAll(false);
+    await loadProjects();
+    setSaving(false);
+  }
+
+  function toggleSelect(id: string) {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  }
+
+  function toggleSelectAll() {
+    if (selectAll) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(projects.map((p) => p._id || "")));
+    }
+    setSelectAll(!selectAll);
+  }
+
   return (
     <div className="space-y-6">
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft dark:border-slate-800 dark:bg-slate-900">
@@ -85,17 +120,38 @@ export function ProjectEditor() {
       </div>
 
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft dark:border-slate-800 dark:bg-slate-900">
-        <h3 className="mb-4 text-lg font-semibold">Existing projects</h3>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+          <h3 className="text-lg font-semibold">Existing projects ({projects.length})</h3>
+          <div className="flex items-center gap-2">
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={selectAll} onChange={toggleSelectAll} className="rounded" />
+              Select all
+            </label>
+            {selectedIds.size > 0 && (
+              <Button variant="ghost" className="text-red-500" onClick={deleteSelected} disabled={saving}>
+                Delete {selectedIds.size} selected
+              </Button>
+            )}
+          </div>
+        </div>
         {loading ? <p className="text-sm text-slate-500">Loading projects...</p> : (
           <div className="space-y-3">
             {projects.map((project) => (
-              <div key={project._id} className="rounded-2xl border border-slate-200 p-4 dark:border-slate-800">
+              <div key={project._id} className={`rounded-2xl border p-4 dark:border-slate-800 ${selectedIds.has(project._id || "") ? "border-red-500 bg-red-50 dark:bg-red-900/20" : "border-slate-200"}`}>
                 <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <h4 className="font-semibold">{project.title}</h4>
-                    <p className="mt-1 text-sm text-slate-500">{project.description}</p>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {project.techStack.map((tag) => <span key={tag} className="rounded-full border border-slate-300 px-2 py-1 text-xs dark:border-slate-700">{tag}</span>)}
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(project._id || "")}
+                      onChange={() => toggleSelect(project._id || "")}
+                      className="mt-1 rounded"
+                    />
+                    <div>
+                      <h4 className="font-semibold">{project.title}</h4>
+                      <p className="mt-1 text-sm text-slate-500">{project.description}</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {project.techStack.map((tag) => <span key={tag} className="rounded-full border border-slate-300 px-2 py-1 text-xs dark:border-slate-700">{tag}</span>)}
+                      </div>
                     </div>
                   </div>
                   <div className="flex gap-2">
