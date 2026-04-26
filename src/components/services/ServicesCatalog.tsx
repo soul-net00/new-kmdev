@@ -1,44 +1,26 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef } from "react";
 import { useCart } from "@/hooks/useCart";
 import { CartDrawer } from "@/components/services/CartDrawer";
 import { OrderRequestModal } from "@/components/services/OrderRequestModal";
 import { ServiceCard } from "@/components/services/ServiceCard";
 import type { ServiceType } from "@/types";
 
-const ITEMS_PER_PAGE = 3;
-
 export function ServicesCatalog({ services, whatsapp }: { services: ServiceType[]; whatsapp: string }) {
   const { items, total, addItem, removeItem } = useCart();
   const [selectedService, setSelectedService] = useState<ServiceType | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(0);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   if (services.length === 0) return null;
-
-  const totalPages = Math.ceil(services.length / ITEMS_PER_PAGE);
-
-  const goToPage = useCallback((page: number) => {
-    setCurrentPage(page);
-    const container = scrollRef.current;
-    if (container) {
-      const cardWidth = container.clientWidth / ITEMS_PER_PAGE;
-      container.scrollTo({ left: page * cardWidth * ITEMS_PER_PAGE, behavior: "smooth" });
-    }
-  }, []);
 
   return (
     <>
       <div className="grid gap-8 xl:grid-cols-[1fr,320px]">
         <div className="relative">
-          <div 
-            ref={scrollRef}
-            className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 sm:grid sm:snap-none sm:overflow-visible sm:grid-cols-3 sm:gap-4 sm:px-0 sm:pb-0"
-          >
+          <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 sm:grid sm:snap-none sm:overflow-visible sm:grid-cols-3 sm:gap-4 sm:px-0 sm:pb-0">
             {services.map((service) => (
-              <div key={service._id || service.name} className="w-[85vw] snap-center shrink-0 sm:w-auto">
+              <div key={service._id || service.name} className="w-[90vw] snap-center shrink-0 sm:w-auto">
                 <ServiceCard
                   service={service}
                   onAddToCart={addItem}
@@ -48,40 +30,6 @@ export function ServicesCatalog({ services, whatsapp }: { services: ServiceType[
               </div>
             ))}
           </div>
-          
-          {totalPages > 1 && (
-            <>
-              <button 
-                onClick={() => goToPage(currentPage - 1)} 
-                disabled={currentPage === 0}
-                className="absolute left-0 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white shadow-md transition-all hover:border-emerald-400 disabled:opacity-30 dark:border-slate-700 dark:bg-slate-900 md:flex" 
-                aria-label="Previous"
-              >
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-              </button>
-              <button 
-                onClick={() => goToPage(currentPage + 1)} 
-                disabled={currentPage === totalPages - 1}
-                className="absolute right-0 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white shadow-md transition-all hover:border-emerald-400 disabled:opacity-30 dark:border-slate-700 dark:bg-slate-900 md:flex" 
-                aria-label="Next"
-              >
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-              </button>
-            </>
-          )}
-          
-          {totalPages > 1 && (
-            <div className="flex justify-center gap-1.5 pb-2 md:hidden">
-              {Array.from({ length: totalPages }).map((_, i) => (
-                <button 
-                  key={i} 
-                  onClick={() => goToPage(i)}
-                  className={`h-2 w-2 rounded-full transition-colors ${currentPage === i ? "bg-emerald-500" : "bg-slate-300"}`}
-                  aria-label={`Go to page ${i + 1}`}
-                />
-              ))}
-            </div>
-          )}
         </div>
         
         <div className="hidden xl:block">
@@ -116,7 +64,7 @@ export function ServicesCatalog({ services, whatsapp }: { services: ServiceType[
             <div className="sticky top-0 flex items-center justify-between border-b border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
               <h3 className="text-lg font-semibold">Service cart</h3>
               <button onClick={() => setCartOpen(false)} className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-slate-800">
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
