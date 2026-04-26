@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useCart } from "@/hooks/useCart";
 import { CartDrawer } from "@/components/services/CartDrawer";
 import { OrderRequestModal } from "@/components/services/OrderRequestModal";
@@ -11,21 +11,50 @@ export function ServicesCatalog({ services, whatsapp }: { services: ServiceType[
   const { items, total, addItem, removeItem } = useCart();
   const [selectedService, setSelectedService] = useState<ServiceType | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: "left" | "right") => {
+    const container = scrollRef.current;
+    if (!container) return;
+    const scrollAmount = container.clientWidth * 0.8;
+    container.scrollBy({ left: direction === "left" ? -scrollAmount : scrollAmount, behavior: "smooth" });
+  };
 
   return (
     <>
       <div className="grid gap-8 xl:grid-cols-[1fr,320px]">
-        <div className="grid gap-6 md:grid-cols-2">
-          {services.map((service) => (
-            <ServiceCard
-              key={service._id || service.name}
-              service={service}
-              onAddToCart={addItem}
-              onRequest={setSelectedService}
-              whatsapp={whatsapp}
-            />
-          ))}
+        <div className="relative">
+          <div ref={scrollRef} className="no-scrollbar -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 sm:mx-0 sm:block sm:grid sm:grid-cols-2 sm:gap-6 sm:px-0 sm:pb-0">
+            {services.map((service) => (
+              <div key={service._id || service.name} className="w-[85vw] snap-center shrink-0 sm:w-auto">
+                <ServiceCard
+                  service={service}
+                  onAddToCart={addItem}
+                  onRequest={setSelectedService}
+                  whatsapp={whatsapp}
+                />
+              </div>
+            ))}
+          </div>
+          
+          {services.length > 2 && (
+            <>
+              <button onClick={() => scroll("left")} className="absolute left-0 top-1/2 z-10 -translate-y-1/2 hidden md:flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white shadow-md hover:border-emerald-400 dark:border-slate-700 dark:bg-slate-900" aria-label="Scroll left">
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+              </button>
+              <button onClick={() => scroll("right")} className="absolute right-0 top-1/2 z-10 -translate-y-1/2 hidden md:flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white shadow-md hover:border-emerald-400 dark:border-slate-700 dark:bg-slate-900" aria-label="Scroll right">
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+              </button>
+            </>
+          )}
+          
+          <div className="flex justify-center gap-1.5 pb-2 md:hidden">
+            {services.map((_, i) => (
+              <button key={i} className="dot-indicator h-2 w-2 rounded-full bg-slate-300" aria-label={`Go to slide ${i + 1}`} />
+            ))}
+          </div>
         </div>
+        
         <div className="hidden xl:block">
           <aside className="sticky top-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-soft dark:border-slate-800 dark:bg-slate-900">
             <h3 className="text-lg font-semibold">Service cart</h3>

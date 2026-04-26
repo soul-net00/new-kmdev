@@ -18,10 +18,10 @@ export function ServiceCard({ service, onAddToCart, onRequest, whatsapp }: Servi
 
   return (
     <div 
-      className="h-72 [perspective:1000px] sm:h-80" 
+      className="h-72 [perspective:1000px] sm:h-80 cursor-pointer"
       onClick={() => setFlipped((value) => !value)}
     >
-      <div className={`relative flex h-full w-full flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-shadow duration-500 dark:border-slate-800 dark:bg-slate-900 sm:p-6 ${flipped ? "shadow-md" : ""}`}>
+      <div className={`relative flex h-full w-full flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all duration-300 hover:border-emerald-400/50 hover:shadow-[0_0_35px_rgba(16,185,129,0.35)] hover:scale-[1.02] dark:border-slate-800 dark:bg-slate-900 sm:p-6 active:scale-[0.98] ${flipped ? "shadow-md" : ""}`}>
         <div className="flex-1">
           <div className="mb-3 sm:mb-4">
             <PreviewableImage

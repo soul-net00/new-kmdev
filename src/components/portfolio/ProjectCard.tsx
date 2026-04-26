@@ -11,14 +11,13 @@ export function ProjectCard({ project }: { project: ProjectType }) {
   const url = project.liveUrl || project.githubUrl || "https://kmdev.example.com";
 
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-shadow duration-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 sm:p-5">
+    <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all duration-300 hover:border-emerald-400/50 hover:shadow-[0_0_35px_rgba(16,185,129,0.35)] hover:scale-[1.02] dark:border-slate-800 dark:bg-slate-900 sm:p-5 active:scale-[0.98]">
       <div className="mb-3 overflow-hidden rounded-xl sm:mb-4">
         <PreviewableImage
           src={project.image || ""}
           alt={project.title}
           className="h-28 w-full sm:h-32"
           fallbackEmoji="💻"
-          showSparkle={false}
         />
       </div>
       <div className="mb-1.5 text-xs font-semibold uppercase tracking-[0.25em] text-emerald-600">{project.category}</div>

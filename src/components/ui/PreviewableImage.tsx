@@ -16,7 +16,7 @@ export function PreviewableImage({
   alt,
   className = "",
   fallbackEmoji = "🖼️",
-  showSparkle = true
+  showSparkle = false
 }: PreviewableImageProps) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -35,19 +35,14 @@ export function PreviewableImage({
   return (
     <>
       <div
-        className={`group relative overflow-hidden ${className}`}
+        className={`group relative overflow-hidden ${className} rounded-2xl border border-transparent transition-all duration-300 hover:border-emerald-400/50 hover:shadow-[0_0_35px_rgba(16,185,129,0.35)]`}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
         <img
           src={src}
           alt={alt}
-          className="h-full w-full object-cover transition-opacity duration-300"
-          style={{
-            opacity: isHovered ? 1.05 : 1,
-            filter: isHovered ? "brightness(1.05)" : "brightness(1)",
-            willChange: "opacity, filter"
-          }}
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
         />
         
         {showSparkle && isHovered && (

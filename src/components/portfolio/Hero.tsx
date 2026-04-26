@@ -23,9 +23,9 @@ export function Hero({ hero }: { hero: HeroContent }) {
           <Link href="/services" className="rounded-xl border border-slate-300 px-5 py-3 font-semibold dark:border-slate-700">My Services</Link>
         </div>
       </div>
-<div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 md:rounded-3xl md:p-6">
+<div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 shadow-sm transition-all duration-300 hover:border-emerald-400/50 hover:shadow-[0_0_35px_rgba(16,185,129,0.35)] hover:scale-[1.02] dark:border-slate-800 dark:bg-slate-900 md:rounded-3xl md:p-6">
         {hero.image ? (
-          <img src={hero.image} alt="Kgomotso Mamogale" className="w-full rounded-xl object-cover max-h-48 mb-4" />
+          <img src={hero.image} alt="Kgomotso Mamogale" className="w-full rounded-xl object-cover max-h-48 mb-4 transition-transform duration-300 hover:scale-[1.02]" />
         ) : (
           <>
             <div className="mb-3 flex gap-2 md:mb-4">
