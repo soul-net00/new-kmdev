@@ -18,7 +18,7 @@ export const defaultSiteSettings: Omit<SiteSettingsType, "_id"> = {
     ]
   },
   about: {
-    text: "I focus on useful digital work: websites, databases, admin systems, and networking support.",
+    text: "Hi, I'm Kgomotso Mamogale 👋\n\nI'm an IT professional specializing in networking, web development, and system analysis. My expertise spans VPN configurations, proxy systems, and network infrastructure management, complemented by building modern, responsive web applications.\n\nI bring hands-on experience with database design, Excel automation, and SQL query development. Additionally, I offer computer hardware services including diagnostics, assembly, and system setup—enabling me to deliver comprehensive IT solutions for businesses and individuals alike.\n\nLet's build something remarkable together 🚀",
     image: "",
     highlights: ["Web Development", "Database Design", "IT Support", "Networking"]
   },
