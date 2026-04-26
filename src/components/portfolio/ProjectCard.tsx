@@ -6,6 +6,7 @@ import type { ProjectType } from "@/types";
 
 export function ProjectCard({ project }: { project: ProjectType }) {
   const [open, setOpen] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const url = project.liveUrl || project.githubUrl || "https://kmdev.example.com";
 
   return (
@@ -20,6 +21,27 @@ export function ProjectCard({ project }: { project: ProjectType }) {
       <div className="mb-1.5 text-xs font-semibold uppercase tracking-[0.25em] text-emerald-600">{project.category}</div>
       <h3 className="text-base font-semibold sm:text-xl">{project.title}</h3>
       <p className="mt-1.5 text-xs text-slate-600 dark:text-slate-300 line-clamp-2 sm:text-sm">{project.description}</p>
+      
+      {project.highlights && project.highlights.length > 0 && (
+        <button 
+          onClick={() => setShowDetails(!showDetails)}
+          className="mt-2 text-xs text-emerald-600 hover:text-emerald-700 dark:text-emerald-400"
+        >
+          {showDetails ? "Hide features ▲" : "Show features ▼"}
+        </button>
+      )}
+      
+      {showDetails && project.highlights && (
+        <ul className="mt-2 space-y-1">
+          {project.highlights.map((highlight, i) => (
+            <li key={i} className="flex items-start gap-1.5 text-xs text-slate-600 dark:text-slate-400">
+              <span className="text-emerald-500 mt-0.5">✓</span>
+              {highlight}
+            </li>
+          ))}
+        </ul>
+      )}
+      
       <div className="mt-3 flex flex-wrap gap-1.5 sm:mt-4">
         {project.techStack.slice(0, 4).map((tag) => (
           <span key={tag} className="rounded-full bg-slate-50 px-2 py-1 text-[10px] font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200 sm:text-xs">{tag}</span>

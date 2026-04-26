@@ -38,6 +38,7 @@ export interface ProjectType {
   githubUrl?: string;
   liveUrl?: string;
   featured?: boolean;
+  highlights?: string[];
   createdAt?: string;
 }
 
@@ -45,7 +46,7 @@ export interface SkillType {
   _id?: string;
   name: string;
   percentage: number;
-  group: "Frontend" | "Backend" | "Database" | "Networking" | "Tools";
+  group: "Frontend" | "Backend" | "Database" | "Networking" | "Tools" | "Web Development" | "Data & Systems" | "System & Hardware" | "Analysis";
 }
 
 export interface TechTagType {
