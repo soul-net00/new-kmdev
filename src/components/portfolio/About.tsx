@@ -15,6 +15,7 @@ export function About({ about }: { about: AboutContent }) {
           alt="Kgomotso Mamogale"
           className="rounded-2xl border border-slate-200 shadow-sm dark:border-slate-800 md:rounded-3xl aspect-square"
           fallbackEmoji="👤"
+          showSparkle={false}
         />
         <div>
           {paragraphs.map((paragraph) => (

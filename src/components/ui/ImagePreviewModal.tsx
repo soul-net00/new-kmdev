@@ -42,7 +42,10 @@ export function ImagePreviewModal({ src, alt, isOpen, onClose }: ImagePreviewMod
         </svg>
       </button>
       
-      <div className="relative max-h-[90vh] max-w-[90vw]" onClick={(e) => e.stopPropagation()}>
+      <div 
+        className="relative max-h-[90vh] max-w-[90vw]" 
+        onClick={(e) => e.stopPropagation()}
+      >
         <img
           src={src}
           alt={alt}
