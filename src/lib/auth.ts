@@ -18,18 +18,6 @@ const getBaseUrl = () => {
 
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
-  cookies: {
-    sessionToken: {
-      name: process.env.NODE_ENV === "production" ? "__Secure-next-auth.session-token" : "next-auth.session-token",
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 30 * 24 * 60 * 60
-      }
-    }
-  },
   providers: [
     GitHubProvider({
       clientId: process.env.GITHUB_ID || "",
@@ -43,34 +31,26 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          console.log("AUTH: Missing credentials");
           return null;
         }
 
         try {
           const admin = await getAdminByEmail(credentials.email);
-          
           if (!admin) {
-            console.log("AUTH: Admin not found for", credentials.email);
             return null;
           }
 
           const isValid = await bcryptjs.compare(credentials.password, admin.password);
-          
           if (!isValid) {
-            console.log("AUTH: Invalid password for", credentials.email);
             return null;
           }
 
-          console.log("AUTH: Login successful for", credentials.email);
-          
           return {
             id: admin._id.toString(),
             email: admin.email,
             name: admin.role || "Admin"
           };
         } catch (error) {
-          console.error("AUTH: Database error during login:", error);
           return null;
         }
       }
@@ -85,7 +65,7 @@ export const authOptions: NextAuthOptions = {
     error: "/login"
   },
   callbacks: {
-    async jwt({ token, user, trigger, session }) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.email = user.email ?? "";
@@ -101,8 +81,7 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     }
-  },
-  debug: process.env.NODE_ENV === "development"
+  }
 };
 
 declare module "next-auth" {
