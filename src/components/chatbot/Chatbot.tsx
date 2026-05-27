@@ -159,7 +159,7 @@ export default function Chatbot() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-20 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl md:bottom-4 md:right-4 ${
+        className={`fixed right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 [bottom:calc(env(safe-area-inset-bottom,0px)+5.25rem)] md:[bottom:calc(env(safe-area-inset-bottom,0px)+1rem)] md:right-4 ${
           isOpen ? "hidden" : "flex"
         }`}
         aria-label="Open chat"
@@ -181,13 +181,13 @@ export default function Chatbot() {
       </button>
 
       <div
-        className={`fixed bottom-20 right-4 z-50 transition-all duration-300 md:bottom-4 md:right-4 ${
+        className={`fixed right-3 z-50 transition-all duration-300 [bottom:calc(env(safe-area-inset-bottom,0px)+5.25rem)] sm:right-4 md:right-4 md:[bottom:calc(env(safe-area-inset-bottom,0px)+1rem)] ${
           isOpen ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0 pointer-events-none"
         }`}
       >
         <div 
-          className="w-screen max-w-md sm:w-full sm:max-w-md rounded-2xl bg-white shadow-2xl dark:bg-gray-900 border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col"
-          style={{ height: "70vh", maxHeight: "500px" }}
+          className="flex w-[calc(100vw-1.5rem)] max-w-md flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900 sm:w-[28rem]"
+          style={{ height: "min(70dvh, 500px)" }}
         >
           <div className="flex items-center justify-between bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 flex-shrink-0">
             <div className="flex items-center gap-3">

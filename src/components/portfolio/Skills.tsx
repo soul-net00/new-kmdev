@@ -1,73 +1,53 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { motion } from "framer-motion";
 import type { SkillType } from "@/types";
 import { SkillBar } from "./SkillBar";
+import { ResponsiveCarousel } from "@/components/ui/ResponsiveCarousel";
 
 export function Skills({ skills }: { skills: SkillType[] }) {
   const groups = ["Frontend", "Backend", "Database", "Networking", "Tools"] as const;
   const groupsWithSkills = groups.filter((group) => skills.some((skill) => skill.group === group));
-  const [currentPage, setCurrentPage] = useState(0);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   if (groupsWithSkills.length === 0) return null;
 
-  const totalPages = Math.ceil(groupsWithSkills.length / 1);
-
-  const goToPage = useCallback((page: number) => {
-    setCurrentPage(page);
-    if (scrollRef.current) {
-      const cardWidth = scrollRef.current.clientWidth;
-      scrollRef.current.scrollTo({ left: page * cardWidth, behavior: "smooth" });
-    }
-  }, []);
-
-  const handleScroll = useCallback(() => {
-    if (scrollRef.current && window.innerWidth < 1024) {
-      const scrollLeft = scrollRef.current.scrollLeft;
-      const cardWidth = scrollRef.current.clientWidth;
-      const newPage = Math.round(scrollLeft / cardWidth);
-      if (newPage !== currentPage && newPage >= 0 && newPage < totalPages) {
-        setCurrentPage(newPage);
-      }
-    }
-  }, [currentPage, totalPages]);
-
   return (
-    <section id="skills" className="mx-auto max-w-6xl px-4 py-10 md:py-16">
-      <p className="mb-2 font-mono text-xs uppercase tracking-[0.3em] text-emerald-600">SKILLS</p>
-      <h2 className="text-xl font-bold md:text-4xl">Technical Expertise</h2>
-      
-      <div className="relative mt-6 md:mt-8">
-        <div 
-          ref={scrollRef}
-          onScroll={handleScroll}
-          className="flex snap-x snap-mandatory overflow-x-auto overflow-y-hidden pb-4 -mx-4 px-4 lg:overflow-visible lg:mx-0 lg:px-0 lg:snap-none"
-          style={{ WebkitOverflowScrolling: 'touch' }}
-        >
-          {groupsWithSkills.map((group) => (
-            <div key={group} className="w-[85vw] flex-shrink-0 snap-center pr-2 sm:w-auto sm:pr-0 lg:basis-1/3">
-              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:rounded-3xl lg:p-6">
-                <h3 className="mb-3 text-base font-semibold md:mb-4 md:text-lg">{group}</h3>
-                {skills.filter((skill) => skill.group === group).map((skill) => <SkillBar key={skill._id} skill={skill} />)}
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        {totalPages > 1 && (
-          <div className="flex justify-center gap-2 pt-2">
-            {Array.from({ length: totalPages }).map((_, i) => (
-              <button 
-                key={i} 
-                onClick={() => goToPage(i)}
-                className={`h-2 w-2 rounded-full transition-colors ${currentPage === i ? "bg-emerald-500" : "bg-slate-300"}`}
-                aria-label={`Go to slide ${i + 1}`}
-              />
-            ))}
-          </div>
-        )}
+    <motion.section
+      id="skills"
+      className="mx-auto max-w-6xl scroll-mt-24 px-4 py-12 md:px-6 md:py-16 lg:px-8"
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-120px" }}
+      transition={{ duration: 0.45, ease: "easeOut" }}
+    >
+      <p className="mb-2 font-mono text-xs uppercase tracking-[0.3em] text-emerald-400">Skills</p>
+      <div className="mb-6 md:mb-8">
+        <h2 className="text-2xl font-bold text-balance md:text-4xl">Technical expertise</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+          A practical stack for fast interfaces, reliable data, and maintainable delivery.
+        </p>
       </div>
-    </section>
+      
+      <ResponsiveCarousel
+        items={groupsWithSkills.map((group) => ({ key: group }))}
+        itemsPerPage={{ mobile: 1, tablet: 2, desktop: 3 }}
+        ariaLabel="Skills carousel"
+      >
+        {groupsWithSkills.map((group) => (
+          <div
+            key={group}
+            className="group h-full rounded-2xl border border-white/10 bg-white/80 p-5 shadow-[0_18px_60px_rgba(2,6,23,0.08)] backdrop-blur transition duration-300 hover:-translate-y-1 hover:border-emerald-400/40 hover:shadow-[0_0_34px_rgba(16,185,129,0.18)] dark:bg-slate-900/80 lg:rounded-3xl lg:p-6"
+          >
+            <div className="mb-5 flex items-center justify-between gap-4">
+              <h3 className="text-lg font-semibold">{group}</h3>
+              <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-1 font-mono text-xs text-emerald-500 dark:text-emerald-300">
+                {skills.filter((skill) => skill.group === group).length}
+              </span>
+            </div>
+            {skills.filter((skill) => skill.group === group).map((skill) => <SkillBar key={skill._id} skill={skill} />)}
+          </div>
+        ))}
+      </ResponsiveCarousel>
+    </motion.section>
   );
 }
