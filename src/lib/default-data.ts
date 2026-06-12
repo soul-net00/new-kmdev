@@ -51,7 +51,7 @@ export const defaultProjects: ProjectType[] = [
     description: "A responsive business website created for a customer to advertise products, display product information, and guide visitors toward making enquiries or purchases.",
     category: "Web",
     techStack: ["HTML", "CSS", "JavaScript", "Responsive Design"],
-    liveUrl: "",
+    liveUrl: "https://marketplace-01-five.vercel.app/",
     featured: true,
     image: "",
     highlights: [
@@ -68,7 +68,7 @@ export const defaultProjects: ProjectType[] = [
     category: "Web",
     techStack: ["Next.js", "TypeScript", "MongoDB", "Tailwind CSS"],
     githubUrl: "",
-    liveUrl: "",
+    liveUrl: "https://property-new-vert.vercel.app/",
     featured: true,
     image: "",
     highlights: [
@@ -99,7 +99,8 @@ export const defaultProjects: ProjectType[] = [
     description: "A private marketplace-style system focused on business listings, approval workflows, and admin moderation. Details are available on request.",
     category: "Web",
     techStack: ["Next.js", "TypeScript", "MongoDB", "API Routes"],
-    featured: false,
+    liveUrl: "https://marketplace-01-five.vercel.app/",
+    featured: true,
     image: "",
     highlights: [
       "Business listing structure",
@@ -114,7 +115,8 @@ export const defaultProjects: ProjectType[] = [
     description: "A custom private business tool designed to support internal workflows, improve organization, and manage business information efficiently. Details are available on request.",
     category: "Web",
     techStack: ["TypeScript", "MongoDB", "Tailwind CSS"],
-    featured: false,
+    liveUrl: "https://mvula-business-solutions.vercel.app/",
+    featured: true,
     image: "",
     highlights: [
       "Custom workflow support",
@@ -122,6 +124,22 @@ export const defaultProjects: ProjectType[] = [
       "Admin-focused tools",
       "Database storage",
       "Practical business use case"
+    ]
+  },
+  {
+    title: "Indigenous Games SA",
+    description: "A web platform celebrating and showcasing South African indigenous games, built to preserve cultural heritage and present the games in an engaging, modern interface.",
+    category: "Web",
+    techStack: ["Next.js", "TypeScript", "Tailwind CSS", "Responsive Design"],
+    liveUrl: "https://demo-indigenous-games-sa.vercel.app/",
+    featured: true,
+    image: "",
+    highlights: [
+      "Cultural games showcase",
+      "Modern, engaging interface",
+      "Mobile-friendly layout",
+      "Heritage-focused content",
+      "Clean, accessible design"
     ]
   }
 ];

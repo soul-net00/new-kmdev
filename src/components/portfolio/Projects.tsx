@@ -67,6 +67,9 @@ export function Projects({ projects }: { projects: ProjectType[] }) {
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
             Production-minded builds with clean interfaces, practical automation, and stable user flows.
           </p>
+          <p className="mt-3 max-w-2xl rounded-xl border border-emerald-400/20 bg-emerald-400/5 px-4 py-3 text-xs leading-5 text-slate-600 dark:text-slate-300">
+            <span className="font-semibold text-emerald-600 dark:text-emerald-300">Note:</span> These live demos are hosted on Vercel using a free domain, not the client&apos;s own custom domain. They are prototypes shown to demonstrate the concept before the full vision is delivered.
+          </p>
         </div>
 
         {/* Category filters only when showing the full inline set */}

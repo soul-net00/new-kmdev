@@ -20,16 +20,21 @@ export async function POST() {
       console.log("ℹ️ SiteSettings already exists");
     }
 
-    // Seed Projects
+    // Seed Projects (add new, and update existing matched by title)
     let projectsAdded = 0;
+    let projectsUpdated = 0;
     for (const project of defaultProjects) {
       const exists = await Project.findOne({ title: project.title });
       if (!exists) {
         await Project.create(project);
         projectsAdded++;
+      } else {
+        // Refresh fields like liveUrl, githubUrl, featured, etc. from defaults
+        await Project.updateOne({ _id: exists._id }, { $set: project });
+        projectsUpdated++;
       }
     }
-    console.log(`✅ ${projectsAdded} projects added`);
+    console.log(`✅ ${projectsAdded} projects added, ${projectsUpdated} updated`);
 
     // Seed Skills
     let skillsAdded = 0;
@@ -58,7 +63,7 @@ export async function POST() {
       message: "Database seeded successfully",
       summary: {
         siteSettings: existingSettings ? "skipped" : "created",
-        projects: `${projectsAdded} added`,
+        projects: `${projectsAdded} added, ${projectsUpdated} updated`,
         skills: `${skillsAdded} added`,
         services: `${servicesAdded} added`
       }
