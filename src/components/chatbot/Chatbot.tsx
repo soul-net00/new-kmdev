@@ -68,6 +68,10 @@ export default function Chatbot() {
   const [intake, setIntake] = useState({ name: "", email: "", phone: "", company: "" });
   const [intakeBusy, setIntakeBusy] = useState(false);
   const [listening, setListening] = useState(false);
+  // ── Mobile keyboard / viewport handling ──────────────────
+  const [kbInset, setKbInset] = useState(0); // px the soft keyboard overlaps the viewport
+  const [vvHeight, setVvHeight] = useState(0); // current visible (visual) viewport height
+  const [isMobile, setIsMobile] = useState(false);
   const recognitionRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -92,6 +96,47 @@ export default function Chatbot() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
+
+  // Track whether we're on a mobile-sized screen
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(max-width: 767px)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  // Track the visual viewport so the panel stays above the on-screen keyboard
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const vv = window.visualViewport;
+    const onResize = () => {
+      if (vv) {
+        // How many px the keyboard (or browser UI) overlaps the layout viewport bottom
+        const overlap = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+        setKbInset(overlap);
+        setVvHeight(vv.height);
+      } else {
+        setKbInset(0);
+        setVvHeight(window.innerHeight);
+      }
+    };
+    onResize();
+    vv?.addEventListener("resize", onResize);
+    vv?.addEventListener("scroll", onResize);
+    window.addEventListener("resize", onResize);
+    return () => {
+      vv?.removeEventListener("resize", onResize);
+      vv?.removeEventListener("scroll", onResize);
+      window.removeEventListener("resize", onResize);
+    };
+  }, []);
+
+  // When the keyboard opens, keep the latest message / input in view
+  useEffect(() => {
+    if (isOpen && kbInset > 0) scrollToBottom();
+  }, [kbInset, isOpen, scrollToBottom]);
 
   const sendMessage = async (content: string) => {
     if (!content.trim() || isLoading) return;
@@ -270,6 +315,27 @@ export default function Chatbot() {
     return currentMode ? `${currentMode.icon} ${currentMode.label}` : "🧠 Auto";
   };
 
+  // ── Responsive position + size (keeps panel above the keyboard on mobile) ──
+  const keyboardOpen = isMobile && kbInset > 0;
+
+  const wrapperStyle: React.CSSProperties = isMobile
+    ? {
+        right: "0.75rem",
+        left: "0.75rem",
+        bottom: keyboardOpen
+          ? `${kbInset + 8}px`
+          : "calc(env(safe-area-inset-bottom, 0px) + 5.25rem)",
+      }
+    : {
+        right: "1rem",
+        bottom: "calc(env(safe-area-inset-bottom, 0px) + 1rem)",
+      };
+
+  // Cap the panel to the visible area when the keyboard is up; otherwise use a comfortable default
+  const panelHeight = keyboardOpen
+    ? `${Math.max(240, vvHeight - 24)}px`
+    : "min(70dvh, 500px)";
+
   return (
     <>
       <button
@@ -296,13 +362,14 @@ export default function Chatbot() {
       </button>
 
       <div
-        className={`fixed right-3 z-50 transition-all duration-300 [bottom:calc(env(safe-area-inset-bottom,0px)+5.25rem)] sm:right-4 md:right-4 md:[bottom:calc(env(safe-area-inset-bottom,0px)+1rem)] ${
+        className={`fixed z-50 transition-all duration-300 ${
           isOpen ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0 pointer-events-none"
         }`}
+        style={wrapperStyle}
       >
         <div 
-          className="flex w-[calc(100vw-1.5rem)] max-w-md flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900 sm:w-[28rem]"
-          style={{ height: "min(70dvh, 500px)" }}
+          className="ml-auto flex w-full max-w-md flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900 sm:w-[28rem]"
+          style={{ height: panelHeight }}
         >
           <div className="flex items-center justify-between bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 flex-shrink-0">
             <div className="flex items-center gap-3">
@@ -433,7 +500,7 @@ export default function Chatbot() {
               </div>
             </div>
 
-            {showSuggestions && messages.length <= 2 && !isLoading && (
+            {showSuggestions && messages.length <= 2 && !isLoading && !keyboardOpen && (
               <div className="px-4 py-3 flex-shrink-0 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800">
                 <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">How can I help?</p>
                 <div className="mb-3 grid grid-cols-2 gap-2">
@@ -481,7 +548,7 @@ export default function Chatbot() {
           )}
 
           <form onSubmit={handleSubmit} className="border-t border-gray-200 p-3 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-900">
-            {!showIntake && (
+            {!showIntake && !keyboardOpen && (
               <button
                 type="button"
                 onClick={() => setShowIntake(true)}
