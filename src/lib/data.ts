@@ -25,7 +25,7 @@ export async function getSiteSettings(): Promise<SiteSettingsType> {
   try {
     await ensureSeedData();
     const settings = await SiteSettings.findOne().lean();
-    if (settings) return settings as any;
+    if (settings) return toPlain(settings) as any;
     return defaultSiteSettings as any;
   } catch (error) {
     console.error("Database error:", error);

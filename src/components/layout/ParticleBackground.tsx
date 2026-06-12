@@ -67,7 +67,7 @@ export function ParticleBackground() {
     function init() {
       resize();
       particles.length = 0;
-      const count = window.innerWidth < 768 ? 100 : 250;
+      const count = window.innerWidth < 768 ? 60 : 120;
       for (let i = 0; i < count; i++) {
         particles.push(createParticle());
       }
@@ -179,18 +179,39 @@ export function ParticleBackground() {
 
       drawShootingStars();
 
-      animationId = requestAnimationFrame(animate);
+      if (!paused && !document.hidden) {
+        animationId = requestAnimationFrame(animate);
+      }
     }
 
+    let paused = false;
+
     init();
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) {
+      // Honor reduced-motion: render one static frame, no animation loop.
+      paused = true;
+    }
     animate();
     window.addEventListener("resize", resize);
     window.addEventListener("mousemove", handleMouseMove);
+
+    // Pause the loop when the tab/page is hidden so it never competes with
+    // scrolling for the main thread; resume when visible again.
+    function handleVisibility() {
+      if (document.hidden) {
+        cancelAnimationFrame(animationId);
+      } else if (!paused) {
+        animationId = requestAnimationFrame(animate);
+      }
+    }
+    document.addEventListener("visibilitychange", handleVisibility);
 
     return () => {
       cancelAnimationFrame(animationId);
       window.removeEventListener("resize", resize);
       window.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, []);
 

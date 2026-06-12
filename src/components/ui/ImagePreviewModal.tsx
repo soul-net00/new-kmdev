@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useCallback } from "react";
+import { setScrollLock } from "@/lib/utils";
 
 interface ImagePreviewModalProps {
   src: string;
@@ -17,11 +18,11 @@ export function ImagePreviewModal({ src, alt, isOpen, onClose }: ImagePreviewMod
   useEffect(() => {
     if (isOpen) {
       document.addEventListener("keydown", handleEscape);
-      document.body.style.overflow = "hidden";
+      setScrollLock(true);
     }
     return () => {
       document.removeEventListener("keydown", handleEscape);
-      document.body.style.overflow = "";
+      setScrollLock(false);
     };
   }, [isOpen, handleEscape]);
 

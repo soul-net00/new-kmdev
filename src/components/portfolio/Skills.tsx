@@ -1,15 +1,23 @@
 "use client";
 
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 import type { SkillType } from "@/types";
-import { SkillBar } from "./SkillBar";
-import { ResponsiveCarousel } from "@/components/ui/ResponsiveCarousel";
+import { SkillCard } from "./SkillCard";
 
 export function Skills({ skills }: { skills: SkillType[] }) {
-  const groups = ["Frontend", "Backend", "Database", "Networking", "Tools"] as const;
-  const groupsWithSkills = groups.filter((group) => skills.some((skill) => skill.group === group));
+  // Order by proficiency (highest first) so the most important skills lead,
+  // then split into prominence tiers: top 3 are largest, next 3 medium, rest small.
+  const { top, mid, rest } = useMemo(() => {
+    const sorted = [...skills].sort((a, b) => (b.percentage || 0) - (a.percentage || 0));
+    return {
+      top: sorted.slice(0, 3),
+      mid: sorted.slice(3, 6),
+      rest: sorted.slice(6)
+    };
+  }, [skills]);
 
-  if (groupsWithSkills.length === 0) return null;
+  if (skills.length === 0) return null;
 
   return (
     <motion.section
@@ -24,30 +32,38 @@ export function Skills({ skills }: { skills: SkillType[] }) {
       <div className="mb-6 md:mb-8">
         <h2 className="text-2xl font-bold text-balance md:text-4xl">Technical expertise</h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
-          A practical stack for fast interfaces, reliable data, and maintainable delivery.
+          Ordered by proficiency — the strongest tools lead, supporting skills follow.
         </p>
       </div>
-      
-      <ResponsiveCarousel
-        items={groupsWithSkills.map((group) => ({ key: group }))}
-        itemsPerPage={{ mobile: 1, tablet: 2, desktop: 3 }}
-        ariaLabel="Skills carousel"
-      >
-        {groupsWithSkills.map((group) => (
-          <div
-            key={group}
-            className="group h-full rounded-2xl border border-white/10 bg-white/80 p-5 shadow-[0_18px_60px_rgba(2,6,23,0.08)] backdrop-blur transition duration-300 hover:-translate-y-1 hover:border-emerald-400/40 hover:shadow-[0_0_34px_rgba(16,185,129,0.18)] dark:bg-slate-900/80 lg:rounded-3xl lg:p-6"
-          >
-            <div className="mb-5 flex items-center justify-between gap-4">
-              <h3 className="text-lg font-semibold">{group}</h3>
-              <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-1 font-mono text-xs text-emerald-500 dark:text-emerald-300">
-                {skills.filter((skill) => skill.group === group).length}
-              </span>
-            </div>
-            {skills.filter((skill) => skill.group === group).map((skill) => <SkillBar key={skill._id} skill={skill} />)}
+
+      <div className="space-y-4 sm:space-y-5">
+        {/* Tier 1 — highest proficiency, most prominent */}
+        {top.length > 0 && (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-5">
+            {top.map((skill) => (
+              <SkillCard key={skill._id || skill.name} skill={skill} tier="lg" />
+            ))}
           </div>
-        ))}
-      </ResponsiveCarousel>
+        )}
+
+        {/* Tier 2 — medium */}
+        {mid.length > 0 && (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-5">
+            {mid.map((skill) => (
+              <SkillCard key={skill._id || skill.name} skill={skill} tier="md" />
+            ))}
+          </div>
+        )}
+
+        {/* Tier 3 — supporting skills, compact */}
+        {rest.length > 0 && (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {rest.map((skill) => (
+              <SkillCard key={skill._id || skill.name} skill={skill} tier="sm" />
+            ))}
+          </div>
+        )}
+      </div>
     </motion.section>
   );
 }

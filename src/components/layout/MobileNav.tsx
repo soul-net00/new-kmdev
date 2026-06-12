@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
+import { setScrollLock } from "@/lib/utils";
 
 const links = [
   { href: "/#about", label: "About", section: "about" },
@@ -19,9 +20,9 @@ export function MobileNav({ activeSection = "about" }: { activeSection?: string 
   const pathname = usePathname();
 
   useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
+    setScrollLock(open);
     return () => {
-      document.body.style.overflow = "";
+      setScrollLock(false);
     };
   }, [open]);
 

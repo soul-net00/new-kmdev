@@ -47,11 +47,11 @@ export function ServicesPreview({ services }: { services: ServiceType[] }) {
           >
             {service.image && (
               <div className="mb-4 overflow-hidden rounded-xl">
-                <img src={service.image} alt={service.name} className="h-36 w-full object-cover transition duration-500 group-hover:scale-105" />
+                <img src={service.image} alt={service.name} loading="lazy" decoding="async" className="h-36 w-full object-cover transition duration-500 group-hover:scale-105" />
               </div>
             )}
             <h3 className="text-lg font-semibold">{service.name}</h3>
-            <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{service.description}</p>
+            <p className="mt-2 line-clamp-2 min-h-[3rem] text-sm leading-6 text-slate-600 dark:text-slate-300">{service.description}</p>
             <div className="mt-auto pt-5">
               <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-300">From {currency(service.priceFrom)}</p>
             </div>

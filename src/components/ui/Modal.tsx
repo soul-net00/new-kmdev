@@ -2,6 +2,7 @@
 
 import { useEffect, type PropsWithChildren } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { setScrollLock } from "@/lib/utils";
 
 interface ModalProps {
   open: boolean;
@@ -17,12 +18,12 @@ export function Modal({ open, onClose, title, children }: PropsWithChildren<Moda
 
     if (open) {
       document.addEventListener("keydown", handleEscape);
-      document.body.style.overflow = "hidden";
+      setScrollLock(true);
     }
 
     return () => {
       document.removeEventListener("keydown", handleEscape);
-      document.body.style.overflow = "";
+      setScrollLock(false);
     };
   }, [open, onClose]);
 

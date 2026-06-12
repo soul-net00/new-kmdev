@@ -54,10 +54,17 @@ export function ResponsiveCarousel({
 
   const getCardStep = useCallback(() => {
     const container = containerRef.current;
-    const firstCard = container?.querySelector<HTMLElement>("[data-carousel-item]");
-    if (!container || !firstCard) return 0;
-    const gap = parseFloat(window.getComputedStyle(container).columnGap || "0");
-    return firstCard.offsetWidth + gap;
+    if (!container) return 0;
+    const cards = container.querySelectorAll<HTMLElement>("[data-carousel-item]");
+    if (cards.length === 0) return 0;
+    // Most reliable: the real distance between two adjacent cards (width + gap),
+    // independent of how the gap is reported by getComputedStyle.
+    if (cards.length > 1) {
+      const step = cards[1].offsetLeft - cards[0].offsetLeft;
+      if (step > 0) return step;
+    }
+    const gap = parseFloat(window.getComputedStyle(container).columnGap || "0") || 0;
+    return cards[0].offsetWidth + gap;
   }, []);
 
   const goToIndex = useCallback((index: number) => {
@@ -117,8 +124,14 @@ export function ResponsiveCarousel({
   }, [getVisibleCount]);
 
   useEffect(() => {
+    // Re-align the scroll position only when the layout actually changes
+    // (responsive breakpoint resize or a different number of items, e.g. a
+    // filter change). Depending on `activeIndex` here would make the carousel
+    // programmatically scroll on every user scroll tick — fighting the user's
+    // own gesture and causing jank + extra re-renders.
     goToIndex(clamp(activeIndex, 0, Math.max(0, itemCount - visibleCount)));
-  }, [activeIndex, goToIndex, itemCount, visibleCount]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibleCount, itemCount]);
 
   if (itemCount === 0) return null;
 
@@ -138,7 +151,7 @@ export function ResponsiveCarousel({
           <div
             key={items?.[index]?.key ?? index}
             data-carousel-item
-            className={`w-[90vw] shrink-0 snap-center sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-3rem)/3)] ${itemClassName}`}
+            className={`w-[90vw] shrink-0 snap-start sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-3rem)/3)] ${itemClassName}`}
           >
             {slide}
           </div>

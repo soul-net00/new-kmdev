@@ -6,6 +6,7 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   sourceLabel?: string;
+  notice?: string;
 }
 
 interface ChatResponse {
@@ -14,6 +15,8 @@ interface ChatResponse {
   suggestions: string[];
   mode: string;
   sourceLabel: string;
+  provider?: string | null;
+  notice?: string;
 }
 
 type ChatMode = "offline" | "online" | "auto";
@@ -31,6 +34,15 @@ const MODES: ModeOption[] = [
   { value: "online", label: "Online", icon: "🤖", description: "Full AI power" }
 ];
 
+const HOME_OPTIONS = [
+  "Learn About Me",
+  "View Services",
+  "Request a Quote",
+  "Start a New Project",
+  "Existing Client Support",
+  "Ask a Question"
+];
+
 const QUICK_SUGGESTIONS = [
   "Who is Kgomotso?",
   "What services do you offer?",
@@ -43,8 +55,8 @@ export default function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hi there! I'm KMDev AI. How can I help you today?",
-      sourceLabel: "🧠 Auto"
+      content: "Welcome 👋 I'm the KMDev project assistant. I can help you learn about KMDev, explore services, request a quote, start a new project, or get client support. How can I help you today?",
+      sourceLabel: "✨ Assistant"
     }
   ]);
   const [input, setInput] = useState("");
@@ -52,8 +64,17 @@ export default function Chatbot() {
   const [showSuggestions, setShowSuggestions] = useState(true);
   const [mode, setMode] = useState<ChatMode>("auto");
   const [showModeMenu, setShowModeMenu] = useState(false);
+  const [showIntake, setShowIntake] = useState(false);
+  const [intake, setIntake] = useState({ name: "", email: "", phone: "", company: "" });
+  const [intakeBusy, setIntakeBusy] = useState(false);
+  const [listening, setListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const sessionId = useRef<string>("");
+  if (!sessionId.current && typeof crypto !== "undefined") {
+    sessionId.current = crypto.randomUUID?.() || `s_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  }
 
   const scrollToBottom = useCallback(() => {
     setTimeout(() => {
@@ -88,7 +109,8 @@ export default function Chatbot() {
         body: JSON.stringify({
           message: content.trim(),
           history: messages,
-          mode: mode
+          mode: mode,
+          sessionId: sessionId.current
         })
       });
 
@@ -97,7 +119,8 @@ export default function Chatbot() {
       const assistantMessage: Message = {
         role: "assistant",
         content: data.reply || "I'm here to help! What would you like to know about KMDev?",
-        sourceLabel: data.sourceLabel || "🧠 Auto"
+        sourceLabel: data.sourceLabel || "🧠 Auto",
+        notice: data.notice
       };
       setMessages(prev => [...prev, assistantMessage]);
       setShowSuggestions(true);
@@ -117,6 +140,98 @@ export default function Chatbot() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     sendMessage(input);
+  };
+
+  // ── Voice input (Web Speech API) ─────────────────────────
+  const toggleVoice = () => {
+    if (typeof window === "undefined") return;
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Voice input isn't supported in this browser. Please use Chrome, Edge, or Safari.");
+      return;
+    }
+    // The Web Speech API only works in a secure context (HTTPS) or on localhost.
+    if (!window.isSecureContext && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+      alert("Voice input needs a secure connection (HTTPS). It works on localhost and on your live HTTPS site, but not over plain HTTP.");
+      return;
+    }
+    if (listening) {
+      try { recognitionRef.current?.stop(); } catch {}
+      setListening(false);
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.interimResults = true;
+    recognition.continuous = false;
+    recognition.maxAlternatives = 1;
+    recognition.onresult = (event: any) => {
+      const transcript = Array.from(event.results).map((r: any) => r[0].transcript).join("");
+      setInput(transcript);
+    };
+    recognition.onend = () => setListening(false);
+    recognition.onerror = (event: any) => {
+      setListening(false);
+      const err = event?.error;
+      if (err === "not-allowed" || err === "service-not-allowed") {
+        alert("Microphone access was blocked. Allow the mic for this site in your browser's address-bar permissions, then try again.");
+      } else if (err === "no-speech") {
+        alert("I didn't catch any speech. Tap the mic and speak clearly.");
+      } else if (err === "audio-capture") {
+        alert("No microphone was found. Check that a mic is connected and enabled.");
+      } else if (err === "network") {
+        alert("Voice recognition needs an internet connection and could not reach the speech service.");
+      }
+    };
+    recognitionRef.current = recognition;
+    try {
+      recognition.start();
+      setListening(true);
+    } catch {
+      // start() throws if a session is already active — reset state.
+      setListening(false);
+    }
+  };
+
+  // ── Submit a quote / project request to the admin dashboard ──
+  const submitIntake = async () => {
+    if (!intake.name.trim() || !intake.email.trim()) {
+      alert("Please enter your name and email so KMDev can reach you.");
+      return;
+    }
+    setIntakeBusy(true);
+    const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
+    try {
+      const res = await fetch("/api/quote-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contact: intake,
+          transcript: messages.filter((m) => m.role === "user" || m.role === "assistant").map((m) => ({ role: m.role, content: m.content })),
+          summary: lastAssistant?.content || "",
+          estimateText: lastAssistant?.content || "",
+          sessionId: sessionId.current
+        })
+      });
+      if (res.ok) {
+        setShowIntake(false);
+        setIntake({ name: "", email: "", phone: "", company: "" });
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: "✅ Your request has been submitted for developer review. KMDev will review the details and get back to you by email or WhatsApp. Reference will be issued once approved.",
+            sourceLabel: "📋 Submitted"
+          }
+        ]);
+      } else {
+        alert("Could not submit. Please check your details and try again.");
+      }
+    } catch {
+      alert("Network error. Please try again.");
+    } finally {
+      setIntakeBusy(false);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -274,6 +389,11 @@ export default function Chatbot() {
                     className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
                     <div className="max-w-[85%]">
+                      {msg.notice && msg.role === "assistant" && (
+                        <div className="mb-1 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-[11px] text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
+                          ⚡ {msg.notice}
+                        </div>
+                      )}
                       <div
                         className={`rounded-2xl px-4 py-3 ${
                           msg.role === "user"
@@ -314,8 +434,20 @@ export default function Chatbot() {
             </div>
 
             {showSuggestions && messages.length <= 2 && !isLoading && (
-              <div className="px-4 py-2 flex-shrink-0 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800">
-                <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">Quick questions:</p>
+              <div className="px-4 py-3 flex-shrink-0 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800">
+                <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">How can I help?</p>
+                <div className="mb-3 grid grid-cols-2 gap-2">
+                  {HOME_OPTIONS.map((option) => (
+                    <button
+                      key={option}
+                      onClick={() => sendMessage(option)}
+                      className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-left text-xs font-medium text-gray-700 transition-colors hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-blue-900/30 dark:hover:text-blue-300"
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+                <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">Or ask a quick question:</p>
                 <div className="flex flex-wrap gap-2">
                   {QUICK_SUGGESTIONS.map((suggestion, index) => (
                     <button
@@ -331,15 +463,54 @@ export default function Chatbot() {
             )}
           </div>
 
+          {showIntake && (
+            <div className="border-t border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900">
+              <p className="mb-2 text-xs font-medium text-gray-600 dark:text-gray-300">Submit your project request for developer review</p>
+              <div className="grid grid-cols-2 gap-2">
+                <input value={intake.name} onChange={(e) => setIntake({ ...intake, name: e.target.value })} placeholder="Full name *" className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
+                <input value={intake.email} onChange={(e) => setIntake({ ...intake, email: e.target.value })} placeholder="Email *" className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
+                <input value={intake.phone} onChange={(e) => setIntake({ ...intake, phone: e.target.value })} placeholder="Phone" className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
+                <input value={intake.company} onChange={(e) => setIntake({ ...intake, company: e.target.value })} placeholder="Company (optional)" className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
+              </div>
+              <p className="mt-2 text-[10px] text-gray-400">Your contact information is required for project communication, quotations, approvals, invoices, and legal documentation. It is handled securely according to our privacy policy.</p>
+              <div className="mt-2 flex gap-2">
+                <button onClick={submitIntake} disabled={intakeBusy} className="flex-1 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50">{intakeBusy ? "Submitting..." : "Submit request"}</button>
+                <button onClick={() => setShowIntake(false)} className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-600 dark:border-gray-600 dark:text-gray-300">Cancel</button>
+              </div>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="border-t border-gray-200 p-3 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-900">
+            {!showIntake && (
+              <button
+                type="button"
+                onClick={() => setShowIntake(true)}
+                className="mb-2 w-full rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100 dark:border-blue-900/40 dark:bg-blue-900/20 dark:text-blue-300"
+              >
+                📋 Submit project request for review
+              </button>
+            )}
             <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={toggleVoice}
+                aria-label={listening ? "Stop voice input" : "Start voice input"}
+                title="Talk to AI"
+                className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full transition-colors ${
+                  listening ? "animate-pulse bg-red-500 text-white" : "bg-gray-200 text-gray-600 hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-300"
+                }`}
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-14 0m7 7v3m0-3a4 4 0 01-4-4V7a4 4 0 118 0v4a4 4 0 01-4 4z" />
+                </svg>
+              </button>
               <input
                 ref={inputRef}
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyPress}
-                placeholder="Type a message..."
+                placeholder={listening ? "Listening..." : "Type or speak a message..."}
                 disabled={isLoading}
                 className="flex-1 rounded-full border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400"
               />

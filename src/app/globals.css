@@ -12,6 +12,13 @@ html.dark {
 
 html {
   scroll-padding-top: 5.5rem;
+  scroll-behavior: smooth;
+  /* Clip horizontal overflow at the viewport WITHOUT turning the document
+     into a non-scrolling element. `overflow-x: clip` (unlike `hidden`) does
+     not force overflow-y to `auto`, so <html> stays the scroll container and
+     mouse wheel, touchpad, and keyboard (arrows, PageUp/Down, Space, Home/End)
+     scrolling all keep working on desktop. */
+  overflow-x: clip;
 }
 
 body {
@@ -20,11 +27,17 @@ body {
     radial-gradient(circle at top left, rgba(20, 184, 166, 0.08), transparent 28%),
     radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.08), transparent 24%),
     linear-gradient(180deg, rgba(15, 23, 42, 0.02), transparent 30%);
-  overflow-x: hidden;
+  /* No overflow here: setting overflow-x on <body> would make the BODY the
+     scroll container and break keyboard scrolling on desktop. Horizontal
+     overflow is clipped on <html> above instead. */
+  min-height: 100vh;
 }
 
-* {
-  scroll-behavior: smooth;
+/* Respect users who prefer no motion: disable smooth-scroll animation. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 button,
@@ -87,5 +100,25 @@ select {
 @media (max-width: 640px) {
   html {
     font-size: 14px;
+  }
+}
+
+/* Isolate a document for printing / export to PDF: only .print-area shows. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  .no-print {
+    display: none !important;
   }
 }

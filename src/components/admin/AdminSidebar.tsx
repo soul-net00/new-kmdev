@@ -6,6 +6,9 @@ import { cn } from "@/lib/utils";
 
 const items = [
   ["/admin", "Overview"],
+  ["/admin/quotes", "Quote Requests"],
+  ["/admin/clients", "Clients"],
+  ["/admin/agency", "Agency Settings"],
   ["/admin/homepage", "Homepage"],
   ["/admin/about", "About"],
   ["/admin/projects", "Projects"],
@@ -26,7 +29,7 @@ export function AdminSidebar() {
       <div className="mb-4 font-mono text-sm font-bold text-emerald-600 dark:text-emerald-500">KMDev Admin</div>
       <nav className="space-y-1">
         {items.map(([href, label]) => {
-          const active = pathname === href;
+          const active = href === "/admin" ? pathname === href : pathname?.startsWith(href);
           return (
             <Link
               key={href}

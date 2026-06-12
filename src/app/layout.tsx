@@ -37,7 +37,7 @@ const themeScript = `(() => {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="overflow-x-hidden">
+      <body>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <AppSessionProvider>
           {children}
