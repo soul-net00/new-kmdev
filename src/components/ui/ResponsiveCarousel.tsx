@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Children,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode
-} from "react";
+import { Children, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 interface ResponsiveCarouselProps {
   children: ReactNode;
@@ -21,186 +13,205 @@ interface ResponsiveCarouselProps {
   ariaLabel?: string;
 }
 
-function clamp(value: number, min: number, max: number) {
-  return Math.min(Math.max(value, min), max);
-}
-
-export function ResponsiveCarousel({
-  children,
-  items,
-  itemsPerPage = { mobile: 1, tablet: 2, desktop: 3 },
-  showDots = true,
-  showArrows = true,
-  className = "",
-  itemClassName = "",
-  ariaLabel = "Carousel"
-}: ResponsiveCarouselProps) {
-  const slides = useMemo(() => Children.toArray(children), [children]);
-  const itemCount = items?.length ?? slides.length;
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [visibleCount, setVisibleCount] = useState(itemsPerPage.mobile);
+export function ResponsiveCarousel({ children, items, showDots = true, showArrows = true, className = "", ariaLabel = "Carousel" }: ResponsiveCarouselProps) {
+  const slides = Children.toArray(children);
+  const count = slides.length;
+  const [active, setActive] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const [dragX, setDragX] = useState(0);
+  const [paused, setPaused] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const scrollRaf = useRef<number | null>(null);
+  const touch = useRef<{ x: number; y: number; locked: "h" | "v" | null; time: number }>({ x: 0, y: 0, locked: null, time: 0 });
+  const autoRef = useRef<NodeJS.Timeout | null>(null);
+  const reduceMotion = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-  const totalPages = Math.max(1, Math.ceil(itemCount / visibleCount));
-  const activePage = clamp(Math.floor(activeIndex / visibleCount), 0, totalPages - 1);
+  // Wrap index for infinite loop
+  const wrap = (i: number) => ((i % count) + count) % count;
 
-  const getVisibleCount = useCallback(() => {
-    if (typeof window === "undefined") return itemsPerPage.mobile;
-    if (window.matchMedia("(min-width: 1024px)").matches) return itemsPerPage.desktop;
-    if (window.matchMedia("(min-width: 640px)").matches) return itemsPerPage.tablet;
-    return itemsPerPage.mobile;
-  }, [itemsPerPage.desktop, itemsPerPage.mobile, itemsPerPage.tablet]);
+  // Navigate
+  const goTo = useCallback((i: number) => { setActive(wrap(i)); setDragX(0); }, [count]);
+  const next = useCallback(() => goTo(active + 1), [active, goTo]);
+  const prev = useCallback(() => goTo(active - 1), [active, goTo]);
 
-  const getCardStep = useCallback(() => {
-    const container = containerRef.current;
-    if (!container) return 0;
-    const cards = container.querySelectorAll<HTMLElement>("[data-carousel-item]");
-    if (cards.length === 0) return 0;
-    // Most reliable: the real distance between two adjacent cards (width + gap),
-    // independent of how the gap is reported by getComputedStyle.
-    if (cards.length > 1) {
-      const step = cards[1].offsetLeft - cards[0].offsetLeft;
-      if (step > 0) return step;
-    }
-    const gap = parseFloat(window.getComputedStyle(container).columnGap || "0") || 0;
-    return cards[0].offsetWidth + gap;
+  // Autoplay
+  useEffect(() => {
+    if (paused || count <= 1) return;
+    autoRef.current = setInterval(next, 5000);
+    return () => { if (autoRef.current) clearInterval(autoRef.current); };
+  }, [paused, next, count]);
+
+  // Keyboard
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") next();
+      else if (e.key === "ArrowLeft") prev();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [next, prev]);
+
+  // Touch/mouse drag — gesture angle locking
+  const onPointerDown = useCallback((e: React.PointerEvent) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    touch.current = { x: e.clientX, y: e.clientY, locked: null, time: Date.now() };
+    setDragging(true);
+    setPaused(true);
+    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
   }, []);
 
-  const goToIndex = useCallback((index: number) => {
-    const container = containerRef.current;
-    if (!container || itemCount === 0) return;
-    const nextIndex = clamp(index, 0, Math.max(0, itemCount - visibleCount));
-    const cardStep = getCardStep();
-    container.scrollTo({ left: nextIndex * cardStep, behavior: "smooth" });
-    setActiveIndex(nextIndex);
-  }, [getCardStep, itemCount, visibleCount]);
+  const onPointerMove = useCallback((e: React.PointerEvent) => {
+    if (!dragging) return;
+    const dx = e.clientX - touch.current.x;
+    const dy = e.clientY - touch.current.y;
 
-  const goToPage = useCallback((page: number) => {
-    goToIndex(page * visibleCount);
-  }, [goToIndex, visibleCount]);
-
-  const nextPage = useCallback(() => {
-    goToPage(activePage + 1);
-  }, [activePage, goToPage]);
-
-  const prevPage = useCallback(() => {
-    goToPage(activePage - 1);
-  }, [activePage, goToPage]);
-
-  const handleScroll = useCallback(() => {
-    if (scrollRaf.current) cancelAnimationFrame(scrollRaf.current);
-    scrollRaf.current = requestAnimationFrame(() => {
-      const container = containerRef.current;
-      const cardStep = getCardStep();
-      if (!container || !cardStep) return;
-      const nextIndex = clamp(Math.round(container.scrollLeft / cardStep), 0, Math.max(0, itemCount - visibleCount));
-      setActiveIndex((current) => (current === nextIndex ? current : nextIndex));
-    });
-  }, [getCardStep, itemCount, visibleCount]);
-
-  const handleKeyDown = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "ArrowRight") {
-      event.preventDefault();
-      nextPage();
+    // Determine lock direction (first 8px of movement)
+    if (!touch.current.locked && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+      touch.current.locked = Math.abs(dy) > Math.abs(dx) ? "v" : "h";
     }
-    if (event.key === "ArrowLeft") {
-      event.preventDefault();
-      prevPage();
+
+    // Vertical? Surrender immediately — let page scroll
+    if (touch.current.locked === "v") {
+      setDragging(false);
+      setDragX(0);
+      return;
     }
-  }, [nextPage, prevPage]);
 
-  useEffect(() => {
-    const updateVisibleCount = () => {
-      setVisibleCount(getVisibleCount());
+    if (touch.current.locked === "h") {
+      setDragX(dx);
+    }
+  }, [dragging]);
+
+  const onPointerUp = useCallback((e: React.PointerEvent) => {
+    if (!dragging) { setPaused(false); return; }
+    setDragging(false);
+    const dx = e.clientX - touch.current.x;
+    const dt = Date.now() - touch.current.time;
+    const velocity = Math.abs(dx) / Math.max(dt, 1);
+    const threshold = containerRef.current ? containerRef.current.clientWidth * 0.2 : 80;
+
+    // Swipe detection: distance OR velocity
+    if (dx < -threshold || (dx < -20 && velocity > 0.4)) next();
+    else if (dx > threshold || (dx > 20 && velocity > 0.4)) prev();
+
+    setDragX(0);
+    setTimeout(() => setPaused(false), 100);
+  }, [dragging, next, prev]);
+
+  // Card positioning via transforms
+  const getStyle = (index: number): React.CSSProperties => {
+    let offset = index - active;
+    // Wrap for infinite: choose shortest path
+    if (offset > count / 2) offset -= count;
+    if (offset < -count / 2) offset += count;
+
+    const dragOffset = dragging ? dragX : 0;
+    const baseTranslate = offset * 75; // % spacing between cards
+    const pixelDrag = (dragOffset / (containerRef.current?.clientWidth || 400)) * 75;
+    const translateX = baseTranslate + pixelDrag;
+
+    const isCenter = offset === 0;
+    const isAdjacent = Math.abs(offset) === 1;
+    const scale = isCenter ? 1 : isAdjacent ? 0.82 : 0.7;
+    const opacity = isCenter ? 1 : isAdjacent ? 0.55 : 0;
+    const blur = isCenter ? 0 : isAdjacent ? 1 : 4;
+    const z = isCenter ? 10 : isAdjacent ? 5 : 1;
+
+    return {
+      position: "absolute" as const,
+      left: "50%",
+      top: 0,
+      width: "82%",
+      maxWidth: "380px",
+      transform: `translate3d(calc(-50% + ${translateX}%), 0, 0) scale(${scale})`,
+      opacity: Math.abs(offset) > 2 ? 0 : opacity,
+      filter: `blur(${blur}px)`,
+      zIndex: z,
+      transition: dragging ? "none" : `transform 0.4s cubic-bezier(0.32,0.72,0,1), opacity 0.4s ease, filter 0.4s ease`,
+      willChange: "transform",
+      pointerEvents: isCenter ? "auto" as const : "auto" as const,
     };
+  };
 
-    updateVisibleCount();
-    window.addEventListener("resize", updateVisibleCount);
-    return () => {
-      window.removeEventListener("resize", updateVisibleCount);
-      if (scrollRaf.current) cancelAnimationFrame(scrollRaf.current);
-    };
-  }, [getVisibleCount]);
-
-  useEffect(() => {
-    // Re-align the scroll position only when the layout actually changes
-    // (responsive breakpoint resize or a different number of items, e.g. a
-    // filter change). Depending on `activeIndex` here would make the carousel
-    // programmatically scroll on every user scroll tick — fighting the user's
-    // own gesture and causing jank + extra re-renders.
-    goToIndex(clamp(activeIndex, 0, Math.max(0, itemCount - visibleCount)));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibleCount, itemCount]);
-
-  if (itemCount === 0) return null;
+  if (count === 0) return null;
 
   return (
-    <div className={`relative ${className}`}>
+    <div
+      className={`relative ${className}`}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      {/* Track */}
       <div
         ref={containerRef}
-        onScroll={handleScroll}
-        onKeyDown={handleKeyDown}
-        tabIndex={0}
         role="region"
         aria-label={ariaLabel}
-        className="no-scrollbar -mx-4 flex touch-pan-x snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-4 pb-4 outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/70 sm:-mx-6 sm:gap-6 sm:px-6 lg:-mx-2 lg:px-2"
-        style={{ WebkitOverflowScrolling: "touch" }}
+        aria-roledescription="carousel"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+        className="relative mx-auto w-full select-none overflow-hidden"
+        style={{ height: "auto", minHeight: "30rem", touchAction: "pan-y" }}
       >
-        {slides.map((slide, index) => (
+        {slides.map((slide, i) => (
           <div
-            key={items?.[index]?.key ?? index}
+            key={items?.[i]?.key ?? i}
             data-carousel-item
-            className={`w-[90vw] shrink-0 snap-start sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-3rem)/3)] ${itemClassName}`}
+            role="group"
+            aria-roledescription="slide"
+            aria-label={`Slide ${i + 1} of ${count}`}
+            onClick={() => { if (i !== active && !dragging) goTo(i); }}
+            style={getStyle(i)}
+            className="cursor-pointer"
           >
             {slide}
           </div>
         ))}
       </div>
 
-      {showArrows && totalPages > 1 && (
+      {/* Arrow buttons */}
+      {showArrows && count > 1 && (
         <>
           <button
             type="button"
-            onClick={prevPage}
-            disabled={activePage === 0}
-            className="absolute -left-2 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-emerald-400/20 bg-slate-950/80 text-white shadow-[0_0_24px_rgba(16,185,129,0.22)] backdrop-blur transition duration-300 hover:-translate-x-0.5 hover:border-emerald-300 hover:bg-emerald-500 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:pointer-events-none disabled:opacity-30 lg:flex"
-            aria-label="Previous carousel page"
+            onClick={prev}
+            aria-label="Previous slide"
+            className="absolute left-2 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-black/40 text-white backdrop-blur-md transition-all duration-200 hover:scale-110 hover:bg-black/60 hover:shadow-[0_0_16px_rgba(79,220,255,0.3)] active:scale-95 sm:left-4 sm:h-12 sm:w-12"
           >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           </button>
           <button
             type="button"
-            onClick={nextPage}
-            disabled={activePage === totalPages - 1}
-            className="absolute -right-2 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-emerald-400/20 bg-slate-950/80 text-white shadow-[0_0_24px_rgba(16,185,129,0.22)] backdrop-blur transition duration-300 hover:translate-x-0.5 hover:border-emerald-300 hover:bg-emerald-500 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:pointer-events-none disabled:opacity-30 lg:flex"
-            aria-label="Next carousel page"
+            onClick={next}
+            aria-label="Next slide"
+            className="absolute right-2 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-black/40 text-white backdrop-blur-md transition-all duration-200 hover:scale-110 hover:bg-black/60 hover:shadow-[0_0_16px_rgba(79,220,255,0.3)] active:scale-95 sm:right-4 sm:h-12 sm:w-12"
           >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
           </button>
         </>
       )}
 
-      {showDots && totalPages > 1 && (
-        <div className="flex justify-center gap-2 pt-2" aria-label="Carousel pagination">
-          {Array.from({ length: totalPages }).map((_, page) => (
+      {/* Dots */}
+      {showDots && count > 1 && (
+        <div className="mt-6 flex justify-center gap-2" role="tablist" aria-label="Slide indicators">
+          {slides.map((_, i) => (
             <button
-              key={page}
+              key={i}
               type="button"
-              onClick={() => goToPage(page)}
-              className={`h-2.5 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 ${
-                activePage === page ? "w-8 bg-emerald-400 shadow-[0_0_16px_rgba(52,211,153,0.45)]" : "w-2.5 bg-slate-400/50 hover:bg-emerald-300/70"
-              }`}
-              aria-label={`Go to carousel page ${page + 1}`}
-              aria-current={activePage === page ? "true" : undefined}
+              role="tab"
+              aria-selected={active === i}
+              aria-label={`Go to slide ${i + 1}`}
+              onClick={() => goTo(i)}
+              className={`h-2 rounded-full transition-all duration-300 ${active === i ? "w-7 bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)]" : "w-2 bg-white/15 hover:bg-white/30"}`}
             />
           ))}
         </div>
       )}
+
+      {/* Progress counter */}
+      <div className="mt-3 text-center">
+        <span className="text-[11px] font-mono tabular-nums text-slate-500">{active + 1} / {count}</span>
+      </div>
     </div>
   );
 }

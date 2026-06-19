@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Message {
   role: "user" | "assistant";
@@ -21,17 +22,10 @@ interface ChatResponse {
 
 type ChatMode = "offline" | "online" | "auto";
 
-interface ModeOption {
-  value: ChatMode;
-  label: string;
-  icon: string;
-  description: string;
-}
-
-const MODES: ModeOption[] = [
-  { value: "offline", label: "Offline", icon: "📴", description: "Instant local answers" },
-  { value: "auto", label: "Auto", icon: "🧠", description: "Smart & fast" },
-  { value: "online", label: "Online", icon: "🤖", description: "Full AI power" }
+const MODES: { value: ChatMode; label: string; desc: string }[] = [
+  { value: "offline", label: "Offline", desc: "Instant local" },
+  { value: "auto", label: "Auto", desc: "Smart hybrid" },
+  { value: "online", label: "Online", desc: "Full AI" },
 ];
 
 const HOME_OPTIONS = [
@@ -40,571 +34,341 @@ const HOME_OPTIONS = [
   "Request a Quote",
   "Start a New Project",
   "Existing Client Support",
-  "Ask a Question"
+  "Ask a Question",
 ];
 
-const QUICK_SUGGESTIONS = [
-  "Who is Kgomotso?",
-  "What services do you offer?",
-  "Show me projects",
-  "How can I contact you?"
-];
+const SPRING = { type: "spring" as const, stiffness: 380, damping: 30 };
+const SPRING_SOFT = { type: "spring" as const, stiffness: 260, damping: 26 };
 
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content: "Welcome 👋 I'm the KMDev project assistant. I can help you learn about KMDev, explore services, request a quote, start a new project, or get client support. How can I help you today?",
-      sourceLabel: "✨ Assistant"
-    }
+    { role: "assistant", content: "Hey there — I'm the KMDev assistant. Ask me anything about services, projects, or how to get started.", sourceLabel: "Assistant" },
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(true);
   const [mode, setMode] = useState<ChatMode>("auto");
   const [showModeMenu, setShowModeMenu] = useState(false);
   const [showIntake, setShowIntake] = useState(false);
   const [intake, setIntake] = useState({ name: "", email: "", phone: "", company: "" });
   const [intakeBusy, setIntakeBusy] = useState(false);
   const [listening, setListening] = useState(false);
-  // ── Mobile keyboard / viewport handling ──────────────────
-  const [kbInset, setKbInset] = useState(0); // px the soft keyboard overlaps the viewport
-  const [vvHeight, setVvHeight] = useState(0); // current visible (visual) viewport height
   const [isMobile, setIsMobile] = useState(false);
+  const [kbInset, setKbInset] = useState(0);
+  const [vvHeight, setVvHeight] = useState(0);
+  const [speakingIdx, setSpeakingIdx] = useState<number | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const recognitionRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const sessionId = useRef<string>("");
+  const sessionId = useRef("");
   if (!sessionId.current && typeof crypto !== "undefined") {
-    sessionId.current = crypto.randomUUID?.() || `s_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    sessionId.current = crypto.randomUUID?.() || `s_${Date.now()}`;
   }
 
   const scrollToBottom = useCallback(() => {
-    setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, 100);
+    setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 80);
   }, []);
 
-  useEffect(() => {
-    if (isOpen) {
-      scrollToBottom();
-      inputRef.current?.focus();
-    }
-  }, [isOpen, scrollToBottom]);
+  useEffect(() => { if (isOpen) { scrollToBottom(); inputRef.current?.focus(); } }, [isOpen, scrollToBottom]);
+  useEffect(() => { scrollToBottom(); }, [messages, scrollToBottom]);
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, scrollToBottom]);
-
-  // Track whether we're on a mobile-sized screen
   useEffect(() => {
     if (typeof window === "undefined") return;
     const mq = window.matchMedia("(max-width: 767px)");
-    const update = () => setIsMobile(mq.matches);
-    update();
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
+    const u = () => setIsMobile(mq.matches);
+    u(); mq.addEventListener("change", u);
+    return () => mq.removeEventListener("change", u);
   }, []);
 
-  // Track the visual viewport so the panel stays above the on-screen keyboard
   useEffect(() => {
     if (typeof window === "undefined") return;
     const vv = window.visualViewport;
     const onResize = () => {
-      if (vv) {
-        // How many px the keyboard (or browser UI) overlaps the layout viewport bottom
-        const overlap = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-        setKbInset(overlap);
-        setVvHeight(vv.height);
-      } else {
-        setKbInset(0);
-        setVvHeight(window.innerHeight);
-      }
+      if (vv) { setKbInset(Math.max(0, window.innerHeight - vv.height - vv.offsetTop)); setVvHeight(vv.height); }
+      else { setKbInset(0); setVvHeight(window.innerHeight); }
     };
     onResize();
     vv?.addEventListener("resize", onResize);
-    vv?.addEventListener("scroll", onResize);
     window.addEventListener("resize", onResize);
-    return () => {
-      vv?.removeEventListener("resize", onResize);
-      vv?.removeEventListener("scroll", onResize);
-      window.removeEventListener("resize", onResize);
-    };
+    return () => { vv?.removeEventListener("resize", onResize); window.removeEventListener("resize", onResize); };
   }, []);
 
-  // When the keyboard opens, keep the latest message / input in view
-  useEffect(() => {
-    if (isOpen && kbInset > 0) scrollToBottom();
-  }, [kbInset, isOpen, scrollToBottom]);
+  useEffect(() => { if (isOpen && kbInset > 0) scrollToBottom(); }, [kbInset, isOpen, scrollToBottom]);
 
   const sendMessage = async (content: string) => {
     if (!content.trim() || isLoading) return;
-
     const userMessage: Message = { role: "user", content: content.trim() };
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((p) => [...p, userMessage]);
     setInput("");
     setIsLoading(true);
-    setShowSuggestions(false);
-
     try {
-      const response = await fetch("/api/chat", {
+      const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: content.trim(),
-          history: messages,
-          mode: mode,
-          sessionId: sessionId.current
-        })
+        body: JSON.stringify({ message: content.trim(), history: messages, mode, sessionId: sessionId.current }),
       });
-
-      const data: ChatResponse = await response.json();
-
-      const assistantMessage: Message = {
-        role: "assistant",
-        content: data.reply || "I'm here to help! What would you like to know about KMDev?",
-        sourceLabel: data.sourceLabel || "🧠 Auto",
-        notice: data.notice
-      };
-      setMessages(prev => [...prev, assistantMessage]);
-      setShowSuggestions(true);
+      const data: ChatResponse = await res.json();
+      setMessages((p) => [...p, { role: "assistant", content: data.reply || "How can I help?", sourceLabel: data.sourceLabel, notice: data.notice }]);
     } catch {
-      const errorMessage: Message = {
-        role: "assistant",
-        content: "I'm having trouble responding right now. Please try again or contact KMDev directly.",
-        sourceLabel: "⚠️ Error"
-      };
-      setMessages(prev => [...prev, errorMessage]);
-      setShowSuggestions(true);
+      setMessages((p) => [...p, { role: "assistant", content: "Something went wrong. Try again or reach out directly.", sourceLabel: "Error" }]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    sendMessage(input);
-  };
+  const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); sendMessage(input); };
 
-  // ── Voice input (Web Speech API) ─────────────────────────
   const toggleVoice = () => {
     if (typeof window === "undefined") return;
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Voice input isn't supported in this browser. Please use Chrome, Edge, or Safari.");
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) return;
+    if (listening) { try { recognitionRef.current?.stop(); } catch {} setListening(false); return; }
+    const r = new SR();
+    r.lang = "en-US"; r.interimResults = true; r.continuous = false;
+    r.onresult = (e: any) => setInput(Array.from(e.results).map((x: any) => x[0].transcript).join(""));
+    r.onend = () => setListening(false);
+    r.onerror = () => setListening(false);
+    recognitionRef.current = r;
+    try { r.start(); setListening(true); } catch { setListening(false); }
+  };
+
+  // ── TTS voice output ──────────────────────────────────────
+  const speakMessage = async (text: string, idx: number) => {
+    if (speakingIdx === idx) {
+      audioRef.current?.pause();
+      audioRef.current = null;
+      setSpeakingIdx(null);
       return;
     }
-    // The Web Speech API only works in a secure context (HTTPS) or on localhost.
-    if (!window.isSecureContext && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
-      alert("Voice input needs a secure connection (HTTPS). It works on localhost and on your live HTTPS site, but not over plain HTTP.");
-      return;
-    }
-    if (listening) {
-      try { recognitionRef.current?.stop(); } catch {}
-      setListening(false);
-      return;
-    }
-    const recognition = new SpeechRecognition();
-    recognition.lang = "en-US";
-    recognition.interimResults = true;
-    recognition.continuous = false;
-    recognition.maxAlternatives = 1;
-    recognition.onresult = (event: any) => {
-      const transcript = Array.from(event.results).map((r: any) => r[0].transcript).join("");
-      setInput(transcript);
-    };
-    recognition.onend = () => setListening(false);
-    recognition.onerror = (event: any) => {
-      setListening(false);
-      const err = event?.error;
-      if (err === "not-allowed" || err === "service-not-allowed") {
-        alert("Microphone access was blocked. Allow the mic for this site in your browser's address-bar permissions, then try again.");
-      } else if (err === "no-speech") {
-        alert("I didn't catch any speech. Tap the mic and speak clearly.");
-      } else if (err === "audio-capture") {
-        alert("No microphone was found. Check that a mic is connected and enabled.");
-      } else if (err === "network") {
-        alert("Voice recognition needs an internet connection and could not reach the speech service.");
-      }
-    };
-    recognitionRef.current = recognition;
+    setSpeakingIdx(idx);
     try {
-      recognition.start();
-      setListening(true);
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: text.slice(0, 5000) }),
+      });
+      if (!res.ok) throw new Error("TTS failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audio.addEventListener("ended", () => { URL.revokeObjectURL(url); setSpeakingIdx(null); audioRef.current = null; });
+      audioRef.current = audio;
+      await audio.play();
     } catch {
-      // start() throws if a session is already active — reset state.
-      setListening(false);
+      setSpeakingIdx(null);
     }
   };
 
-  // ── Submit a quote / project request to the admin dashboard ──
   const submitIntake = async () => {
-    if (!intake.name.trim() || !intake.email.trim()) {
-      alert("Please enter your name and email so KMDev can reach you.");
-      return;
-    }
+    if (!intake.name.trim() || !intake.email.trim()) return;
     setIntakeBusy(true);
-    const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
+    const last = [...messages].reverse().find((m) => m.role === "assistant");
     try {
       const res = await fetch("/api/quote-requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contact: intake,
-          transcript: messages.filter((m) => m.role === "user" || m.role === "assistant").map((m) => ({ role: m.role, content: m.content })),
-          summary: lastAssistant?.content || "",
-          estimateText: lastAssistant?.content || "",
-          sessionId: sessionId.current
-        })
+        body: JSON.stringify({ contact: intake, transcript: messages.map((m) => ({ role: m.role, content: m.content })), summary: last?.content || "", estimateText: last?.content || "", sessionId: sessionId.current }),
       });
       if (res.ok) {
-        setShowIntake(false);
-        setIntake({ name: "", email: "", phone: "", company: "" });
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content: "✅ Your request has been submitted for developer review. KMDev will review the details and get back to you by email or WhatsApp. Reference will be issued once approved.",
-            sourceLabel: "📋 Submitted"
-          }
-        ]);
-      } else {
-        alert("Could not submit. Please check your details and try again.");
+        setShowIntake(false); setIntake({ name: "", email: "", phone: "", company: "" });
+        setMessages((p) => [...p, { role: "assistant", content: "Request submitted. KMDev will review and get back to you shortly.", sourceLabel: "Submitted" }]);
       }
-    } catch {
-      alert("Network error. Please try again.");
-    } finally {
-      setIntakeBusy(false);
-    }
+    } catch {} finally { setIntakeBusy(false); }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit(e);
-    }
+  const changeMode = (m: ChatMode) => {
+    setMode(m); setShowModeMenu(false);
+    const labels: Record<ChatMode, string> = { offline: "Switched to offline — instant local answers.", online: "Online mode — full AI, may take a moment.", auto: "Auto mode — best of both worlds." };
+    setMessages((p) => [...p, { role: "assistant", content: labels[m], sourceLabel: m }]);
   };
 
-  const changeMode = (newMode: ChatMode) => {
-    setMode(newMode);
-    setShowModeMenu(false);
-    
-    let notice = "";
-    
-    if (newMode === "offline") {
-      notice = "📴 Offline mode! Responses are fast but may not answer all questions. Online mode might be slow, but we're working on that!";
-    } else if (newMode === "online") {
-      notice = "🤖 Online mode! Full AI power - responses may take a few seconds.";
-    } else if (mode === "offline" && newMode === "auto") {
-      notice = "🧠 Auto mode! Smart hybrid - uses offline first, then AI for complex questions.";
-    } else {
-      notice = "🧠 Back to Auto mode!";
-    }
-
-    const noticeMessage: Message = {
-      role: "assistant",
-      content: notice,
-      sourceLabel: newMode === "offline" ? "📴" : newMode === "online" ? "🤖" : "🧠"
-    };
-    setMessages(prev => [...prev, noticeMessage]);
-  };
-
-  const getModeLabel = () => {
-    const currentMode = MODES.find(m => m.value === mode);
-    return currentMode ? `${currentMode.icon} ${currentMode.label}` : "🧠 Auto";
-  };
-
-  // ── Responsive position + size (keeps panel above the keyboard on mobile) ──
   const keyboardOpen = isMobile && kbInset > 0;
+  const panelHeight = keyboardOpen ? `${Math.max(240, vvHeight - 24)}px` : "min(72dvh, 540px)";
 
   const wrapperStyle: React.CSSProperties = isMobile
-    ? {
-        right: "0.75rem",
-        left: "0.75rem",
-        bottom: keyboardOpen
-          ? `${kbInset + 8}px`
-          : "calc(env(safe-area-inset-bottom, 0px) + 5.25rem)",
-      }
-    : {
-        right: "1rem",
-        bottom: "calc(env(safe-area-inset-bottom, 0px) + 1rem)",
-      };
-
-  // Cap the panel to the visible area when the keyboard is up; otherwise use a comfortable default
-  const panelHeight = keyboardOpen
-    ? `${Math.max(240, vvHeight - 24)}px`
-    : "min(70dvh, 500px)";
+    ? { right: "0.75rem", left: "0.75rem", bottom: keyboardOpen ? `${kbInset + 8}px` : "calc(env(safe-area-inset-bottom,0px) + 5.25rem)" }
+    : { right: "1.25rem", bottom: "1.25rem" };
 
   return (
     <>
-      <button
-        onClick={() => setIsOpen(true)}
-        className={`fixed right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 [bottom:calc(env(safe-area-inset-bottom,0px)+5.25rem)] md:[bottom:calc(env(safe-area-inset-bottom,0px)+1rem)] md:right-4 ${
-          isOpen ? "hidden" : "flex"
-        }`}
-        aria-label="Open chat"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-7 w-7"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-          />
-        </svg>
-      </button>
+      {/* FAB */}
+      <AnimatePresence>
+        {!isOpen && (
+          <motion.button
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            transition={SPRING}
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.92 }}
+            onClick={() => setIsOpen(true)}
+            className="fixed right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-[0_8px_32px_rgba(16,185,129,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 [bottom:calc(env(safe-area-inset-bottom,0px)+5.25rem)] md:[bottom:calc(env(safe-area-inset-bottom,0px)+1.25rem)] md:right-5"
+            aria-label="Open chat"
+          >
+            <svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+            </svg>
+          </motion.button>
+        )}
+      </AnimatePresence>
 
-      <div
-        className={`fixed z-50 transition-all duration-300 ${
-          isOpen ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0 pointer-events-none"
-        }`}
-        style={wrapperStyle}
-      >
-        <div 
-          className="ml-auto flex w-full max-w-md flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900 sm:w-[28rem]"
-          style={{ height: panelHeight }}
-        >
-          <div className="flex items-center justify-between bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 flex-shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                  />
-                </svg>
+      {/* Panel */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ y: 24, opacity: 0, scale: 0.95 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: 24, opacity: 0, scale: 0.95 }}
+            transition={SPRING_SOFT}
+            className="fixed z-50"
+            style={wrapperStyle}
+          >
+            <div
+              className="ml-auto flex w-full max-w-[26rem] flex-col overflow-hidden rounded-[1.5rem] border border-white/10 bg-zinc-950 shadow-[0_32px_80px_rgba(0,0,0,0.55)] sm:w-[26rem]"
+              style={{ height: panelHeight }}
+            >
+              {/* Header */}
+              <div className="relative flex items-center justify-between px-5 py-4 flex-shrink-0">
+                <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/10 to-transparent pointer-events-none" />
+                <div className="flex items-center gap-3 relative z-10">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/15 ring-1 ring-emerald-500/20">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="rgb(52 211 153)" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-white tracking-tight">KMDev AI</h3>
+                    <p className="text-[11px] text-zinc-500">Always here to help</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 relative z-10">
+                  {/* Mode selector */}
+                  <div className="relative">
+                    <button onClick={() => setShowModeMenu(!showModeMenu)} className="flex items-center gap-1 rounded-lg bg-white/5 px-2.5 py-1.5 text-[11px] font-medium text-zinc-400 ring-1 ring-white/5 transition-colors hover:bg-white/10 hover:text-zinc-200">
+                      {mode === "auto" ? "Auto" : mode === "online" ? "Online" : "Offline"}
+                      <svg className={`h-3 w-3 transition-transform ${showModeMenu ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                    </button>
+                    <AnimatePresence>
+                      {showModeMenu && (
+                        <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.15 }} className="absolute right-0 top-full mt-1.5 w-36 rounded-xl bg-zinc-900 ring-1 ring-white/10 p-1 z-50 shadow-xl">
+                          {MODES.map((o) => (
+                            <button key={o.value} onClick={() => changeMode(o.value)} className={`w-full rounded-lg px-3 py-2 text-left text-xs transition-colors ${mode === o.value ? "bg-emerald-500/15 text-emerald-400" : "text-zinc-400 hover:bg-white/5 hover:text-zinc-200"}`}>
+                              <span className="font-medium">{o.label}</span>
+                              <span className="ml-1.5 text-zinc-600">{o.desc}</span>
+                            </button>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                  <button onClick={() => setIsOpen(false)} className="rounded-lg p-1.5 text-zinc-500 transition-colors hover:bg-white/5 hover:text-zinc-200" aria-label="Close chat">
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                  </button>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-white">KMDev AI</h3>
-                <p className="text-xs text-blue-100">Ask me about KMDev</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <button
-                  onClick={() => setShowModeMenu(!showModeMenu)}
-                  className="flex items-center gap-1 rounded-full bg-white/20 px-2 py-1 text-xs text-white hover:bg-white/30 transition-colors"
-                >
-                  <span>{getModeLabel()}</span>
-                  <svg className={`h-3 w-3 transition-transform ${showModeMenu ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                
-                {showModeMenu && (
-                  <div className="absolute right-0 top-full mt-1 w-44 rounded-lg bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
-                    {MODES.map((modeOption) => (
-                      <button
-                        key={modeOption.value}
-                        onClick={() => changeMode(modeOption.value)}
-                        className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 ${
-                          mode === modeOption.value ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : "text-gray-700 dark:text-gray-300"
-                        }`}
-                      >
-                        <span>{modeOption.icon}</span>
-                        <div>
-                          <div className="font-medium">{modeOption.label}</div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">{modeOption.description}</div>
+
+              {/* Messages */}
+              <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-3 scrollbar-thin">
+                <div className="flex flex-col gap-3 py-2">
+                  {messages.map((msg, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ ...SPRING_SOFT, delay: i === messages.length - 1 ? 0.05 : 0 }}
+                      className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                    >
+                      <div className="max-w-[82%]">
+                        {msg.notice && msg.role === "assistant" && (
+                          <div className="mb-1.5 rounded-lg border border-amber-500/20 bg-amber-500/5 px-2.5 py-1.5 text-[10px] text-amber-400/80">{msg.notice}</div>
+                        )}
+                        <div className={`rounded-2xl px-4 py-2.5 ${msg.role === "user" ? "bg-emerald-500 text-white rounded-br-lg" : "bg-zinc-800/80 text-zinc-200 rounded-bl-lg ring-1 ring-white/5"}`}>
+                          <p className="text-[13px] leading-relaxed whitespace-pre-wrap break-words">{msg.content}</p>
                         </div>
+                        {msg.sourceLabel && msg.role === "assistant" && (
+                          <div className="mt-1 px-1 flex items-center gap-2">
+                            <p className="text-[10px] text-zinc-600">{msg.sourceLabel}</p>
+                            <button
+                              onClick={() => speakMessage(msg.content, i)}
+                              aria-label={speakingIdx === i ? "Stop speaking" : "Read aloud"}
+                              className={`p-0.5 rounded transition-colors ${speakingIdx === i ? "text-blue-400 animate-pulse" : "text-zinc-500 hover:text-zinc-300"}`}
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                {speakingIdx === i
+                                  ? <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                  : <path strokeLinecap="round" strokeLinejoin="round" d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.9M11 5L6 9H2v6h4l5 4V5z" />
+                                }
+                              </svg>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+                  {isLoading && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
+                      <div className="flex items-center gap-1.5 rounded-2xl bg-zinc-800/80 px-4 py-3 ring-1 ring-white/5">
+                        {[0, 1, 2].map((d) => (
+                          <motion.span key={d} className="h-1.5 w-1.5 rounded-full bg-emerald-400/70" animate={{ y: [0, -4, 0] }} transition={{ duration: 0.6, repeat: Infinity, delay: d * 0.15 }} />
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+              </div>
+
+              {/* Quick options */}
+              {messages.length <= 2 && !isLoading && !keyboardOpen && (
+                <div className="px-4 pb-3 flex-shrink-0">
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {HOME_OPTIONS.map((opt) => (
+                      <button key={opt} onClick={() => sendMessage(opt)} className="cursor-pointer rounded-xl bg-white/[0.03] px-3 py-2 text-left text-[11px] font-medium text-zinc-400 ring-1 ring-white/5 transition-all duration-200 hover:bg-emerald-500/10 hover:text-emerald-300 hover:ring-emerald-500/20 active:scale-[0.97]">
+                        {opt}
                       </button>
                     ))}
                   </div>
-                )}
-              </div>
-              
-              <button
-                onClick={() => setIsOpen(false)}
-                className="rounded-full p-1.5 text-white/80 hover:bg-white/20 hover:text-white transition-colors"
-                aria-label="Close chat"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-            <div className="flex-1 overflow-y-auto p-4 min-h-0">
-              <div className="flex flex-col gap-3">
-                {messages.map((msg, index) => (
-                  <div
-                    key={index}
-                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                  >
-                    <div className="max-w-[85%]">
-                      {msg.notice && msg.role === "assistant" && (
-                        <div className="mb-1 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-[11px] text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
-                          ⚡ {msg.notice}
-                        </div>
-                      )}
-                      <div
-                        className={`rounded-2xl px-4 py-3 ${
-                          msg.role === "user"
-                            ? "bg-blue-600 text-white rounded-br-md"
-                            : "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100 rounded-bl-md"
-                        }`}
-                      >
-                        <p 
-                          className="text-sm leading-relaxed whitespace-pre-wrap break-words"
-                          style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
-                        >
-                          {msg.content}
-                        </p>
-                      </div>
-                      {msg.sourceLabel && msg.role === "assistant" && (
-                        <div className="mt-1 px-1">
-                          <span className="text-xs text-gray-400 dark:text-gray-500">
-                            {msg.sourceLabel}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-
-                {isLoading && (
-                  <div className="flex justify-start">
-                    <div className="flex items-center gap-1 rounded-2xl bg-gray-100 px-4 py-3 dark:bg-gray-800">
-                      <span className="h-2 w-2 animate-bounce rounded-full bg-gray-400" style={{ animationDelay: "0ms" }} />
-                      <span className="h-2 w-2 animate-bounce rounded-full bg-gray-400" style={{ animationDelay: "150ms" }} />
-                      <span className="h-2 w-2 animate-bounce rounded-full bg-gray-400" style={{ animationDelay: "300ms" }} />
-                    </div>
-                  </div>
-                )}
-
-                <div ref={messagesEndRef} />
-              </div>
-            </div>
-
-            {showSuggestions && messages.length <= 2 && !isLoading && !keyboardOpen && (
-              <div className="px-4 py-3 flex-shrink-0 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800">
-                <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">How can I help?</p>
-                <div className="mb-3 grid grid-cols-2 gap-2">
-                  {HOME_OPTIONS.map((option) => (
-                    <button
-                      key={option}
-                      onClick={() => sendMessage(option)}
-                      className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-left text-xs font-medium text-gray-700 transition-colors hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-blue-900/30 dark:hover:text-blue-300"
-                    >
-                      {option}
-                    </button>
-                  ))}
                 </div>
-                <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">Or ask a quick question:</p>
-                <div className="flex flex-wrap gap-2">
-                  {QUICK_SUGGESTIONS.map((suggestion, index) => (
-                    <button
-                      key={index}
-                      onClick={() => sendMessage(suggestion)}
-                      className="rounded-full bg-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-blue-100 hover:text-blue-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-blue-900/30 dark:hover:text-blue-400"
-                    >
-                      {suggestion}
-                    </button>
-                  ))}
+              )}
+
+              {/* Intake form */}
+              {showIntake && (
+                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="border-t border-white/5 bg-zinc-900/50 p-4 flex-shrink-0">
+                  <p className="mb-2.5 text-[11px] font-medium text-zinc-400">Submit for developer review</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {(["name", "email", "phone", "company"] as const).map((f) => (
+                      <input key={f} value={intake[f]} onChange={(e) => setIntake({ ...intake, [f]: e.target.value })} placeholder={f === "name" ? "Name *" : f === "email" ? "Email *" : f === "phone" ? "Phone" : "Company"} className="rounded-lg border-0 bg-white/5 px-3 py-2 text-xs text-zinc-200 ring-1 ring-white/5 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-emerald-500/40" />
+                    ))}
+                  </div>
+                  <div className="mt-3 flex gap-2">
+                    <button onClick={submitIntake} disabled={intakeBusy} className="flex-1 rounded-lg bg-emerald-500 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-emerald-400 disabled:opacity-50 active:scale-[0.97]">{intakeBusy ? "Sending..." : "Submit"}</button>
+                    <button onClick={() => setShowIntake(false)} className="rounded-lg px-3 py-2 text-xs font-medium text-zinc-500 ring-1 ring-white/5 hover:bg-white/5">Cancel</button>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Input */}
+              <form onSubmit={handleSubmit} className="border-t border-white/5 p-3 flex-shrink-0 bg-zinc-950">
+                {!showIntake && !keyboardOpen && (
+                  <button type="button" onClick={() => setShowIntake(true)} className="mb-2.5 w-full cursor-pointer rounded-lg bg-emerald-500/8 px-3 py-1.5 text-[11px] font-semibold text-emerald-400 ring-1 ring-emerald-500/15 transition-colors hover:bg-emerald-500/15 active:scale-[0.98]">
+                    Submit project request for review
+                  </button>
+                )}
+                <div className="flex items-center gap-2">
+                  <button type="button" onClick={toggleVoice} aria-label="Voice input" className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl transition-all duration-200 ${listening ? "bg-red-500/20 text-red-400 ring-1 ring-red-500/30" : "bg-white/5 text-zinc-500 ring-1 ring-white/5 hover:bg-white/10 hover:text-zinc-300"}`}>
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" /><path d="M19 10v2a7 7 0 01-14 0v-2" /><line x1="12" y1="19" x2="12" y2="23" /><line x1="8" y1="23" x2="16" y2="23" /></svg>
+                  </button>
+                  <input ref={inputRef} type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSubmit(e); } }} placeholder={listening ? "Listening..." : "Ask anything..."} disabled={isLoading} className="flex-1 rounded-xl border-0 bg-white/5 px-4 py-2.5 text-[13px] text-zinc-200 ring-1 ring-white/5 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-emerald-500/30 disabled:opacity-50" />
+                  <motion.button type="submit" disabled={!input.trim() || isLoading} whileTap={{ scale: 0.9 }} className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-[0_4px_12px_rgba(16,185,129,0.3)] transition-all duration-200 hover:bg-emerald-400 disabled:opacity-30 disabled:shadow-none">
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
+                  </motion.button>
                 </div>
-              </div>
-            )}
-          </div>
-
-          {showIntake && (
-            <div className="border-t border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900">
-              <p className="mb-2 text-xs font-medium text-gray-600 dark:text-gray-300">Submit your project request for developer review</p>
-              <div className="grid grid-cols-2 gap-2">
-                <input value={intake.name} onChange={(e) => setIntake({ ...intake, name: e.target.value })} placeholder="Full name *" className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
-                <input value={intake.email} onChange={(e) => setIntake({ ...intake, email: e.target.value })} placeholder="Email *" className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
-                <input value={intake.phone} onChange={(e) => setIntake({ ...intake, phone: e.target.value })} placeholder="Phone" className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
-                <input value={intake.company} onChange={(e) => setIntake({ ...intake, company: e.target.value })} placeholder="Company (optional)" className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
-              </div>
-              <p className="mt-2 text-[10px] text-gray-400">Your contact information is required for project communication, quotations, approvals, invoices, and legal documentation. It is handled securely according to our privacy policy.</p>
-              <div className="mt-2 flex gap-2">
-                <button onClick={submitIntake} disabled={intakeBusy} className="flex-1 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50">{intakeBusy ? "Submitting..." : "Submit request"}</button>
-                <button onClick={() => setShowIntake(false)} className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-600 dark:border-gray-600 dark:text-gray-300">Cancel</button>
-              </div>
+              </form>
             </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="border-t border-gray-200 p-3 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-900">
-            {!showIntake && !keyboardOpen && (
-              <button
-                type="button"
-                onClick={() => setShowIntake(true)}
-                className="mb-2 w-full rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100 dark:border-blue-900/40 dark:bg-blue-900/20 dark:text-blue-300"
-              >
-                📋 Submit project request for review
-              </button>
-            )}
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={toggleVoice}
-                aria-label={listening ? "Stop voice input" : "Start voice input"}
-                title="Talk to AI"
-                className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full transition-colors ${
-                  listening ? "animate-pulse bg-red-500 text-white" : "bg-gray-200 text-gray-600 hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-300"
-                }`}
-              >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-14 0m7 7v3m0-3a4 4 0 01-4-4V7a4 4 0 118 0v4a4 4 0 01-4 4z" />
-                </svg>
-              </button>
-              <input
-                ref={inputRef}
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyPress}
-                placeholder={listening ? "Listening..." : "Type or speak a message..."}
-                disabled={isLoading}
-                className="flex-1 rounded-full border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400"
-              />
-              <button
-                type="submit"
-                disabled={!input.trim() || isLoading}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white transition-all hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                  />
-                </svg>
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

@@ -5,6 +5,7 @@ import { Projects } from "@/components/portfolio/Projects";
 import { QRShare } from "@/components/portfolio/QRShare";
 import { ServicesPreview } from "@/components/portfolio/ServicesPreview";
 import { Skills } from "@/components/portfolio/Skills";
+import { Stats } from "@/components/portfolio/Stats";
 import { getProjects, getServices, getSiteSettings, getSkills } from "@/lib/data";
 
 export default async function HomePage() {
@@ -18,6 +19,7 @@ export default async function HomePage() {
   return (
     <>
       <Hero hero={settings.hero} />
+      <Stats stats={settings.hero?.stats} />
       <About about={settings.about} />
       <Projects projects={projects as any} />
       <Skills skills={skills as any} />

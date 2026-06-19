@@ -22,7 +22,7 @@ export function Skills({ skills }: { skills: SkillType[] }) {
   return (
     <motion.section
       id="skills"
-      className="mx-auto max-w-6xl scroll-mt-24 px-4 py-12 md:px-6 md:py-16 lg:px-8"
+      className="mx-auto max-w-6xl scroll-mt-24 px-4 py-20 md:px-6 md:py-28 lg:px-8"
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-120px" }}
@@ -40,8 +40,8 @@ export function Skills({ skills }: { skills: SkillType[] }) {
         {/* Tier 1 — highest proficiency, most prominent */}
         {top.length > 0 && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-5">
-            {top.map((skill) => (
-              <SkillCard key={skill._id || skill.name} skill={skill} tier="lg" />
+            {top.map((skill, i) => (
+              <SkillCard key={skill._id || skill.name} skill={skill} tier="lg" index={i} />
             ))}
           </div>
         )}
@@ -49,8 +49,8 @@ export function Skills({ skills }: { skills: SkillType[] }) {
         {/* Tier 2 — medium */}
         {mid.length > 0 && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-5">
-            {mid.map((skill) => (
-              <SkillCard key={skill._id || skill.name} skill={skill} tier="md" />
+            {mid.map((skill, i) => (
+              <SkillCard key={skill._id || skill.name} skill={skill} tier="md" index={i} />
             ))}
           </div>
         )}
@@ -58,8 +58,8 @@ export function Skills({ skills }: { skills: SkillType[] }) {
         {/* Tier 3 — supporting skills, compact */}
         {rest.length > 0 && (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {rest.map((skill) => (
-              <SkillCard key={skill._id || skill.name} skill={skill} tier="sm" />
+            {rest.map((skill, i) => (
+              <SkillCard key={skill._id || skill.name} skill={skill} tier="sm" index={i} />
             ))}
           </div>
         )}

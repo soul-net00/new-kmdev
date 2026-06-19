@@ -1,8 +1,8 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import { MobileNav } from "./MobileNav";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -11,71 +11,78 @@ const links = [
   { href: "/#projects", label: "Projects", section: "projects" },
   { href: "/#skills", label: "Skills", section: "skills" },
   { href: "/services", label: "Services", section: "services" },
-  { href: "/admin", label: "Admin", section: "admin" }
+  { href: "/admin", label: "Admin", section: "admin" },
 ];
 
 export function Navbar() {
   const pathname = usePathname();
-  const [activeSection, setActiveSection] = useState("about");
+  const [activeSection, setActiveSection] = useState("");
+  const [visible, setVisible] = useState(true);
+  const [lastY, setLastY] = useState(0);
 
   useEffect(() => {
-    if (pathname !== "/") return;
-
-    const sections = ["about", "projects", "skills", "contact"]
-      .map((id) => document.getElementById(id))
-      .filter(Boolean) as HTMLElement[];
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-
-        if (visible?.target.id) setActiveSection(visible.target.id);
-      },
-      { rootMargin: "-35% 0px -50% 0px", threshold: [0.12, 0.35, 0.6] }
-    );
-
-    sections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
+    const sections = links.map((l) => l.section);
+    const observers: IntersectionObserver[] = [];
+    sections.forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const obs = new IntersectionObserver(
+        ([entry]) => { if (entry.isIntersecting) setActiveSection(id); },
+        { threshold: 0.4 }
+      );
+      obs.observe(el);
+      observers.push(obs);
+    });
+    return () => observers.forEach((o) => o.disconnect());
   }, [pathname]);
 
-  const isActive = (section: string) => {
-    if (section === "services") return pathname?.startsWith("/services");
-    if (section === "admin") return pathname?.startsWith("/admin");
-    return pathname === "/" && activeSection === section;
-  };
+  useEffect(() => {
+    const handle = () => {
+      const y = window.scrollY;
+      setVisible(y < lastY || y < 50);
+      setLastY(y);
+    };
+    window.addEventListener("scroll", handle, { passive: true });
+    return () => window.removeEventListener("scroll", handle);
+  }, [lastY]);
+
+  const isActive = (section: string) =>
+    pathname === `/${section}` || activeSection === section;
 
   return (
-    <header className="sticky top-0 z-30 border-b border-white/10 bg-white/82 backdrop-blur-xl dark:bg-slate-950/82">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:px-6 lg:px-8">
-        <Link
-          href="/"
-          className="rounded-lg font-mono text-lg font-bold text-emerald-500 transition hover:text-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
-        >
-          KMDev
-        </Link>
-        <nav className="hidden items-center gap-2 md:flex" aria-label="Primary navigation">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`rounded-full px-3 py-2 text-sm font-medium transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 ${
-                isActive(link.section)
-                  ? "bg-emerald-400 text-slate-950 shadow-[0_0_20px_rgba(52,211,153,0.22)]"
-                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white"
-              }`}
-              aria-current={isActive(link.section) ? "page" : undefined}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-        <div className="flex items-center gap-3">
-          <ThemeToggle />
-          <MobileNav activeSection={activeSection} />
-        </div>
+    <motion.nav
+      animate={{ y: visible ? 0 : "-100%" }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      className="fixed top-5 left-4 right-4 z-40 mx-auto max-w-4xl rounded-full
+        bg-white/75 dark:bg-slate-900/70 backdrop-blur-[18px]
+        border border-black/[0.05] dark:border-white/10
+        shadow-[0_4px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)]
+        px-5 py-2.5 flex items-center justify-between"
+    >
+      <Link href="/" className="font-bold text-lg tracking-tight">
+        KMDev
+      </Link>
+
+      <div className="hidden md:flex items-center gap-1">
+        {links.map((link) => (
+          <Link
+            key={link.section}
+            href={link.href}
+            className={`text-sm px-3 py-1.5 rounded-full transition-colors ${
+              isActive(link.section)
+                ? "bg-emerald-500 text-white"
+                : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+            }`}
+          >
+            {link.label}
+          </Link>
+        ))}
       </div>
-    </header>
+
+      <div className="flex items-center gap-2">
+        <ThemeToggle />
+        <MobileNav activeSection={activeSection} />
+      </div>
+    </motion.nav>
   );
 }
