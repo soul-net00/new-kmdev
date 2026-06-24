@@ -1,0 +1,2663 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KM DEV — Shop v2</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ─── TOKENS ─────────────────────────────────────────── */
+:root{
+  --acc:#6366f1;--acc2:#818cf8;--acc3:#4f46e5;
+  --grn:#10b981;--grn2:#059669;
+  --red:#ef4444;--red2:#dc2626;
+  --amb:#f59e0b;--amb2:#d97706;
+  --blu:#3b82f6;--blu2:#2563eb;
+  --fn:"DM Sans",sans-serif;--mo:"DM Mono",monospace;
+  --r:10px;--r2:14px;--r3:18px;
+  --tr:all .18s ease;
+}
+[data-theme="dark"]{
+  --bg:#0b0b12;--card:#13131c;--card2:#1a1a26;--card3:#21212f;--card4:#282838;
+  --bd:#262638;--bd2:#1e1e2e;
+  --tx:#e4e4f0;--tx2:#9090b8;--tx3:#50507a;
+  --ibg:#161622;--ibd:#2a2a42;
+  --sh:0 8px 40px rgba(0,0,0,.55);--sh2:0 2px 14px rgba(0,0,0,.35);
+  --sh3:0 0 0 1px rgba(99,102,241,.15),0 8px 40px rgba(0,0,0,.55);
+}
+[data-theme="light"]{
+  --bg:#f2f2fa;--card:#fff;--card2:#f8f8ff;--card3:#f2f2ff;--card4:#ebebfc;
+  --bd:#dcdcf0;--bd2:#e8e8f8;
+  --tx:#18182e;--tx2:#48487a;--tx3:#9090b8;
+  --ibg:#fff;--ibd:#d4d4ee;
+  --sh:0 4px 24px rgba(80,80,160,.08);--sh2:0 2px 8px rgba(80,80,160,.06);
+  --sh3:0 0 0 1px rgba(99,102,241,.1),0 4px 24px rgba(80,80,160,.08);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);min-height:100vh;padding:14px;font-family:var(--fn);color:var(--tx);transition:background .3s,color .3s;font-size:14px}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+
+/* ─── AUTH BAR ─────────────────────────────────────────── */
+.abar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:9px 14px;border-radius:var(--r);border:1px solid}
+.abar.guest{background:rgba(99,102,241,.06);border-color:rgba(99,102,241,.18);color:var(--tx2)}
+.abar.logged{background:rgba(16,185,129,.06);border-color:rgba(16,185,129,.22);color:var(--grn)}
+[data-theme="light"] .abar.logged{color:#065f46}
+.al{display:flex;align-items:center;gap:8px;font-size:12px}
+.badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.5px;font-family:var(--mo)}
+.bl{background:var(--card3);color:var(--tx2);border:1px solid var(--bd)}.bc{background:var(--grn);color:#fff}
+.sdot{width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0}
+.sd-ok{background:var(--grn)}.sd-sy{background:var(--amb);animation:sp .7s infinite}.sd-off{background:var(--tx3)}
+@keyframes sp{0%,100%{opacity:1}50%{opacity:.2}}
+.srow{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--tx2)}
+
+/* ─── HEADER ─────────────────────────────────────────── */
+.hdr{background:var(--card);border-radius:var(--r2);padding:16px 22px;box-shadow:var(--sh);border:1px solid var(--bd)}
+.htop{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.brand{display:flex;align-items:center;gap:12px}
+.bico{width:40px;height:40px;background:linear-gradient(135deg,var(--acc),#a855f7);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.brand h1{font-size:16px;font-weight:700;line-height:1.2}
+.brand p{font-size:11px;color:var(--tx2);margin-top:2px}
+.hr{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tbtn2{height:34px;padding:0 10px;border-radius:var(--r);border:1px solid var(--bd);background:var(--card2);cursor:pointer;font-size:12px;display:flex;align-items:center;gap:5px;transition:var(--tr);color:var(--tx2);font-family:var(--fn);font-weight:500;white-space:nowrap}
+.tbtn2:hover{border-color:var(--acc);color:var(--acc)}
+.hb{padding:7px 13px;border:none;border-radius:var(--r);cursor:pointer;font-weight:600;font-size:12px;font-family:var(--fn);transition:var(--tr)}
+.hbg{background:var(--grn);color:#fff}.hbg:hover{background:var(--grn2)}
+.hbb{background:var(--blu);color:#fff}.hbb:hover{background:var(--blu2)}
+.cbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--bd);font-size:11px;color:var(--tx2)}
+.cbar a{color:var(--acc2);font-weight:600;text-decoration:none}.cbar a:hover{text-decoration:underline}
+
+/* ─── TABS ─────────────────────────────────────────── */
+.tabs{background:var(--card);border-radius:var(--r2);padding:6px;box-shadow:var(--sh);display:flex;gap:4px;flex-wrap:wrap;border:1px solid var(--bd);overflow-x:auto}
+.tb{padding:8px 14px;border:none;background:transparent;border-radius:var(--r);cursor:pointer;font-weight:600;font-size:12px;color:var(--tx2);font-family:var(--fn);transition:var(--tr);white-space:nowrap;display:flex;align-items:center;gap:5px}
+.tb.on{background:linear-gradient(135deg,var(--acc),#a855f7);color:#fff;box-shadow:0 4px 12px rgba(99,102,241,.35)}
+.tb:hover:not(.on){background:var(--card2);color:var(--tx)}
+.tb-badge{background:rgba(255,255,255,.25);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;font-family:var(--mo)}
+.tb:not(.on) .tb-badge{background:var(--card3);color:var(--tx2)}
+
+/* ─── CONTENT ─────────────────────────────────────────── */
+.content{background:var(--card);border-radius:var(--r2);padding:22px;box-shadow:var(--sh);border:1px solid var(--bd)}
+.pane{display:none}.pane.on{display:block}
+
+/* ─── SECTION TITLE ─────────────────────────────────────────── */
+.st{font-size:11px;font-weight:700;color:var(--tx2);margin:18px 0 10px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.8px}
+.st::after{content:"";flex:1;height:1px;background:var(--bd)}
+.st:first-child{margin-top:0}
+
+/* ─── FORMS ─────────────────────────────────────────── */
+.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:10px;margin-bottom:12px}
+.fg3{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+.fi{display:flex;flex-direction:column}
+.fi label{font-size:10px;font-weight:700;color:var(--tx2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+.fi input,.fi select,.fi textarea{padding:9px 11px;border:1.5px solid var(--ibd);border-radius:var(--r);font-size:13px;background:var(--ibg);color:var(--tx);font-family:var(--fn);transition:var(--tr);width:100%}
+.fi input:focus,.fi select:focus,.fi textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px rgba(99,102,241,.1)}
+.fi select option{background:var(--card)}
+textarea{resize:vertical;min-height:60px}
+
+/* ─── BUTTONS ─────────────────────────────────────────── */
+.btn{padding:10px 20px;border:none;border-radius:var(--r);font-weight:600;cursor:pointer;font-size:13px;font-family:var(--fn);transition:var(--tr);display:inline-flex;align-items:center;gap:5px;justify-content:center}
+.bp{background:linear-gradient(135deg,var(--acc),#a855f7);color:#fff}.bp:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(99,102,241,.35)}
+.bs{background:var(--grn);color:#fff}.bs:hover{background:var(--grn2)}
+.bd{background:var(--red);color:#fff}.bd:hover{background:var(--red2)}
+.bg{background:var(--card2);color:var(--tx);border:1.5px solid var(--bd)}.bg:hover{background:var(--card3);border-color:var(--acc)}
+.bamb{background:var(--amb);color:#fff}.bamb:hover{background:var(--amb2)}
+.bblu{background:var(--blu);color:#fff}.bblu:hover{background:var(--blu2)}
+.bfw{width:100%;margin-top:6px}
+.arow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* ─── ALERTS ─────────────────────────────────────────── */
+.wb{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);border-radius:var(--r);padding:10px 14px;font-size:12px;color:var(--amb);margin-bottom:12px}
+.wb-red{background:rgba(239,68,68,.07);border-color:rgba(239,68,68,.2);color:var(--red)}
+.wb-grn{background:rgba(16,185,129,.07);border-color:rgba(16,185,129,.2);color:var(--grn)}
+[data-theme="light"] .wb{background:#fef9ec;color:#92400e}
+[data-theme="light"] .wb-red{background:#fef2f2;color:#991b1b}
+[data-theme="light"] .wb-grn{color:#065f46;background:rgba(16,185,129,.07)}
+
+/* ─── TABLE ─────────────────────────────────────────── */
+.tsc{overflow-x:auto;border-radius:var(--r);border:1px solid var(--bd);margin-top:10px}
+table{width:100%;border-collapse:collapse;min-width:420px}
+th{background:var(--card2);padding:8px 11px;text-align:left;font-weight:700;font-size:10px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--bd)}
+td{padding:9px 11px;font-size:13px;color:var(--tx);border-bottom:1px solid var(--bd2)}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--card2)}
+
+/* ─── STAT SUMMARY CARD ─────────────────────────────────────────── */
+.scard{background:linear-gradient(135deg,var(--acc),#a855f7);color:#fff;padding:18px 22px;border-radius:var(--r);margin-top:14px}
+.sc-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.sc-tot{font-size:32px;font-weight:800;font-family:var(--mo)}
+.sc-lbl{font-size:10px;opacity:.75;margin-bottom:2px}
+textarea.na{width:100%;margin-top:10px;padding:10px 12px;border:1px solid rgba(255,255,255,.2);border-radius:var(--r);background:rgba(255,255,255,.08);color:#fff;font-size:13px;font-family:var(--fn);resize:vertical;min-height:54px}
+textarea.na::placeholder{color:rgba(255,255,255,.4)}
+
+/* ─── RECEIPT/JOB CARDS ─────────────────────────────────────────── */
+.rc{background:var(--card2);padding:12px 15px;border-radius:var(--r);margin-bottom:8px;border-left:3px solid var(--acc);cursor:pointer;transition:var(--tr);border-top:1px solid var(--bd);border-right:1px solid var(--bd);border-bottom:1px solid var(--bd)}
+.rc:hover{background:var(--card3);transform:translateX(2px);box-shadow:var(--sh2)}
+.rc-code{font-size:11px;font-weight:700;color:var(--acc2);font-family:var(--mo)}
+.rc-name{font-weight:600;font-size:14px;margin-top:2px}
+.rc-sub{font-size:11px;color:var(--tx2);margin-top:2px}
+.rc-amt{font-size:16px;font-weight:800;color:var(--grn);font-family:var(--mo)}
+
+/* ─── STATUS BADGES ─────────────────────────────────────────── */
+.status{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;font-family:var(--mo);letter-spacing:.3px}
+.s-unpaid{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+.s-partial{background:rgba(245,158,11,.12);color:var(--amb);border:1px solid rgba(245,158,11,.25)}
+.s-paid{background:rgba(16,185,129,.12);color:var(--grn);border:1px solid rgba(16,185,129,.25)}
+.s-received{background:rgba(99,102,241,.12);color:var(--acc2);border:1px solid rgba(99,102,241,.25)}
+.s-diagnosing{background:rgba(245,158,11,.12);color:var(--amb);border:1px solid rgba(245,158,11,.25)}
+.s-repairing{background:rgba(59,130,246,.12);color:var(--blu);border:1px solid rgba(59,130,246,.25)}
+.s-testing{background:rgba(168,85,247,.12);color:#a855f7;border:1px solid rgba(168,85,247,.25)}
+.s-ready{background:rgba(16,185,129,.12);color:var(--grn);border:1px solid rgba(16,185,129,.25)}
+.s-collected{background:rgba(80,80,122,.12);color:var(--tx2);border:1px solid var(--bd)}
+.s-cancelled{background:rgba(239,68,68,.08);color:var(--red);border:1px solid rgba(239,68,68,.15)}
+.s-low{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+.s-ok{background:rgba(16,185,129,.1);color:var(--grn);border:1px solid rgba(16,185,129,.2)}
+.p-urgent{background:rgba(239,68,68,.1);color:var(--red)}
+.p-high{background:rgba(245,158,11,.1);color:var(--amb)}
+.p-normal{background:rgba(99,102,241,.1);color:var(--acc2)}
+.p-low{background:rgba(80,80,122,.1);color:var(--tx2)}
+
+/* ─── CUSTOMER CARDS ─────────────────────────────────────────── */
+.cc{background:var(--card2);border-radius:var(--r);padding:12px 15px;margin-bottom:8px;border:1.5px solid var(--bd);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;transition:var(--tr)}
+.cc:hover{border-color:var(--acc);background:var(--card3)}
+.cvb{background:rgba(99,102,241,.12);color:var(--acc2);font-weight:700;padding:2px 8px;border-radius:20px;font-size:11px;font-family:var(--mo)}
+
+/* ─── DISCOUNT ─────────────────────────────────────────── */
+.dr{display:flex;align-items:center;gap:11px;flex-wrap:wrap;margin:8px 0}
+.dr input[type=checkbox]{width:15px;height:15px;accent-color:var(--acc);cursor:pointer}
+.dr label{font-size:13px;font-weight:500;color:var(--tx2);cursor:pointer}
+.dinp{width:74px;padding:8px;border-radius:var(--r);border:1.5px solid var(--ibd);background:var(--ibg);color:var(--tx);font-size:13px;font-family:var(--fn)}
+
+/* ─── SEARCH ─────────────────────────────────────────── */
+.sb{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.sb input,.sb select{flex:1;min-width:150px;padding:9px 12px;border:1.5px solid var(--ibd);border-radius:var(--r);font-size:13px;background:var(--ibg);color:var(--tx);font-family:var(--fn);transition:var(--tr)}
+.sb input:focus,.sb select:focus{outline:none;border-color:var(--acc)}
+.cs{width:100%;padding:9px 12px;border:1.5px solid var(--ibd);border-radius:var(--r);font-size:13px;background:var(--ibg);color:var(--tx);font-family:var(--fn);margin-bottom:12px;transition:var(--tr)}
+.cs:focus{outline:none;border-color:var(--acc)}
+
+/* ─── ANALYTICS ─────────────────────────────────────────── */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px}
+.stat-card{background:var(--card2);padding:14px 16px;border-radius:var(--r);border:1px solid var(--bd);text-align:center}
+.stat-n{font-size:24px;font-weight:700;color:var(--acc2);font-family:var(--mo)}
+.stat-l{font-size:11px;color:var(--tx2);margin-top:3px}
+.stat-s{font-size:11px;font-weight:600;margin-top:4px}
+.chart-wrap{background:var(--card2);border-radius:var(--r);padding:16px;border:1px solid var(--bd);margin-bottom:14px;position:relative}
+.chart-title{font-size:12px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.charts-grid{grid-template-columns:1fr}}
+
+/* ─── INVENTORY ─────────────────────────────────────────── */
+.inv-card{background:var(--card2);border-radius:var(--r);padding:12px 15px;margin-bottom:8px;border:1px solid var(--bd);transition:var(--tr)}
+.inv-card:hover{border-color:var(--acc);background:var(--card3)}
+.inv-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.inv-name{font-weight:600;font-size:14px}
+.inv-sku{font-size:11px;color:var(--tx3);font-family:var(--mo)}
+.inv-price{font-size:15px;font-weight:700;color:var(--grn);font-family:var(--mo)}
+
+/* ─── REPAIR JOB CARDS ─────────────────────────────────────────── */
+.job-card{background:var(--card2);border-radius:var(--r);padding:13px 16px;margin-bottom:8px;border:1px solid var(--bd);transition:var(--tr);cursor:pointer}
+.job-card:hover{border-color:var(--acc);background:var(--card3);transform:translateX(2px)}
+.job-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px}
+.job-code{font-size:11px;font-weight:700;color:var(--acc2);font-family:var(--mo)}
+.job-device{font-weight:600;font-size:14px;margin-top:2px}
+.job-sub{font-size:11px;color:var(--tx2);margin-top:2px}
+.job-right{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+
+/* ─── MODAL ─────────────────────────────────────────── */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;align-items:flex-start;justify-content:center;padding:14px;backdrop-filter:blur(4px);overflow-y:auto;padding-top:40px}
+.modal.on{display:flex}
+.mbox{background:var(--card);border-radius:var(--r2);padding:22px;max-width:820px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,.55);border:1px solid var(--bd);margin:auto}
+.mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--bd)}
+.mt{font-size:15px;font-weight:700}
+.mx{background:none;border:none;font-size:22px;cursor:pointer;color:var(--tx2);width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:var(--tr)}
+.mx:hover{background:var(--card2);color:var(--tx)}
+
+/* ─── CONFIRM DIALOG (replaces browser alert/confirm) ───── */
+#cdialog{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:3000;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(6px)}
+#cdialog.on{display:flex}
+.cdb{background:var(--card);border-radius:var(--r2);padding:24px;max-width:380px;width:100%;box-shadow:0 40px 80px rgba(0,0,0,.6);border:1px solid var(--bd)}
+.cdb-icon{font-size:36px;text-align:center;margin-bottom:10px}
+.cdb-title{font-size:16px;font-weight:700;text-align:center;margin-bottom:8px}
+.cdb-msg{font-size:13px;color:var(--tx2);text-align:center;margin-bottom:20px;line-height:1.6}
+.cdb-inp{width:100%;padding:10px 12px;border:1.5px solid var(--ibd);border-radius:var(--r);font-size:13px;background:var(--ibg);color:var(--tx);font-family:var(--fn);margin-bottom:14px;display:none}
+.cdb-inp:focus{outline:none;border-color:var(--acc)}
+.cdb-row{display:flex;gap:8px}
+
+/* ─── AUTH MODAL ─────────────────────────────────────────── */
+#am{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:2000;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(8px)}
+#am.on{display:flex}
+.ab{background:var(--card);border-radius:var(--r3);padding:26px;max-width:380px;width:100%;box-shadow:0 40px 100px rgba(0,0,0,.7);border:1px solid var(--bd)}
+.ai{text-align:center;margin-bottom:16px}
+.ai h2{font-size:17px;font-weight:700;color:var(--acc2);margin-top:6px}
+.ai p{font-size:12px;color:var(--tx2);margin-top:2px}
+.ats{display:flex;background:var(--card2);border-radius:var(--r);padding:3px;margin-bottom:14px;gap:3px;border:1px solid var(--bd)}
+.at{flex:1;padding:7px;border:none;background:transparent;border-radius:8px;cursor:pointer;font-weight:600;font-size:12px;color:var(--tx2);font-family:var(--fn);transition:var(--tr)}
+.at.on{background:var(--acc);color:#fff;box-shadow:0 2px 8px rgba(99,102,241,.4)}
+.ain{width:100%;padding:10px 12px;border:1.5px solid var(--ibd);border-radius:var(--r);font-size:13px;background:var(--ibg);color:var(--tx);font-family:var(--fn);margin-bottom:8px;transition:var(--tr)}
+.ain:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px rgba(99,102,241,.1)}
+.asub{width:100%;padding:11px;border:none;border-radius:var(--r);background:linear-gradient(135deg,var(--acc),#a855f7);color:#fff;font-weight:700;font-size:14px;cursor:pointer;font-family:var(--fn);transition:var(--tr);margin-top:3px}
+.asub:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(99,102,241,.35)}
+.adv{display:flex;align-items:center;gap:10px;margin:12px 0;color:var(--tx3);font-size:12px}
+.adv::before,.adv::after{content:"";flex:1;height:1px;background:var(--bd)}
+.agu{width:100%;padding:10px;border:1.5px solid var(--bd);border-radius:var(--r);background:transparent;color:var(--tx2);font-weight:600;font-size:13px;cursor:pointer;font-family:var(--fn);transition:var(--tr)}
+.agu:hover{border-color:var(--acc);color:var(--acc)}
+.oauth-btn{width:100%;padding:10px 12px;border:1.5px solid var(--bd);border-radius:var(--r);background:var(--card2);color:var(--tx);font-weight:600;font-size:13px;cursor:pointer;font-family:var(--fn);transition:var(--tr);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px}
+.oauth-btn:hover{border-color:var(--acc);background:var(--card3);transform:translateY(-1px)}
+.amsg{font-size:12px;padding:10px 13px;border-radius:var(--r);margin-top:8px;display:none;line-height:1.6;white-space:pre-line}
+.amsg.err{background:rgba(239,68,68,.1);color:#fca5a5;border:1px solid rgba(239,68,68,.3)}
+.amsg.ok{background:rgba(16,185,129,.1);color:#6ee7b7;border:1px solid rgba(16,185,129,.3)}
+[data-theme="light"] .amsg.err{background:#fef2f2;color:#991b1b;border-color:#fca5a5}
+[data-theme="light"] .amsg.ok{color:#065f46;background:rgba(16,185,129,.08)}
+
+/* ─── SETTINGS ─────────────────────────────────────────── */
+.slk{text-align:center;padding:44px 20px}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:9px;margin-top:9px}
+.stc{background:var(--card2);padding:14px;border-radius:var(--r);text-align:center;border:1px solid var(--bd)}
+.stn{font-size:24px;font-weight:800;color:var(--acc2);font-family:var(--mo)}
+.stl{font-size:11px;color:var(--tx2);margin-top:2px}
+.lprev{margin-top:9px;padding:12px;border:2px dashed var(--bd);border-radius:var(--r);text-align:center}
+
+/* ─── RECEIPT MODAL INNER ─────────────────────────────────────────── */
+.rco{text-align:center;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--bd)}
+.rco h2{color:var(--acc2);font-size:16px}
+.rco p{font-size:11px;color:var(--tx2);margin-top:2px}
+.rig{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px;background:var(--card2);padding:12px;border-radius:var(--r);border:1px solid var(--bd)}
+.ril{font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.4px;font-weight:700}
+.riv{font-weight:600;font-size:13px;margin-top:2px}
+.ricode{font-family:var(--mo);color:var(--acc2);font-size:14px}
+.rtot{background:linear-gradient(135deg,var(--acc),#a855f7);color:#fff;padding:12px 16px;border-radius:var(--r);text-align:right;margin-top:10px}
+.rtl{font-size:10px;opacity:.8;margin-bottom:2px}
+.rta{font-size:24px;font-weight:800;font-family:var(--mo)}
+
+/* ─── LOADING ─────────────────────────────────────────── */
+#loading{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:4000;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+#loading.on{display:flex}
+.spin{width:40px;height:40px;border:3px solid rgba(255,255,255,.15);border-top-color:var(--acc);border-radius:50%;animation:rotate .7s linear infinite}
+@keyframes rotate{to{transform:rotate(360deg)}}
+
+/* ─── TOAST ─────────────────────────────────────────── */
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(70px);background:#111827;color:#fff;padding:9px 18px;border-radius:var(--r);font-size:13px;font-weight:600;z-index:9999;transition:transform .26s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 28px rgba(0,0,0,.5);white-space:nowrap;font-family:var(--fn);border:1px solid rgba(255,255,255,.08)}
+[data-theme="light"] #toast{background:#18182e}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#toast.t-ok{border-color:rgba(16,185,129,.4)}
+#toast.t-err{border-color:rgba(239,68,68,.4)}
+
+/* ─── EMPTY STATE ─────────────────────────────────────────── */
+.empty{text-align:center;padding:44px 20px;color:var(--tx3)}
+.eico{font-size:40px;margin-bottom:10px}
+
+/* ─── SCROLLBAR ─────────────────────────────────────────── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bd);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--acc)}
+
+/* ─── RECEIPT GENERATOR ─────────────────────────────────────── */
+.rg-lock{text-align:center;padding:44px 20px}
+.rg-steps{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.rg-step{padding:6px 12px;border-radius:var(--r);font-size:11px;font-weight:700;background:var(--card2);color:var(--tx3);border:1px solid var(--bd);cursor:pointer;transition:var(--tr)}
+.rg-step.active{background:var(--acc);color:#fff;border-color:var(--acc)}
+.rg-step.done{background:var(--grn);color:#fff;border-color:var(--grn)}
+.rg-panel{display:none}.rg-panel.on{display:block}
+.rg-cust-card{background:var(--card2);padding:12px;border-radius:var(--r);border:1px solid var(--bd);margin-bottom:10px;cursor:pointer;transition:var(--tr)}
+.rg-cust-card:hover{border-color:var(--acc);background:var(--card3)}
+.rg-cust-card.selected{border-color:var(--grn);background:rgba(16,185,129,.06)}
+.rg-item-row{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd2);flex-wrap:wrap}
+.rg-sync-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px;font-family:var(--mo)}
+.rg-synced{background:rgba(16,185,129,.12);color:var(--grn);border:1px solid rgba(16,185,129,.25)}
+.rg-pending{background:rgba(245,158,11,.12);color:var(--amb);border:1px solid rgba(245,158,11,.25)}
+.rg-failed{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+.rg-dash{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px}
+.rg-dash-card{background:var(--card2);padding:14px;border-radius:var(--r);border:1px solid var(--bd);text-align:center}
+.rg-dash-n{font-size:22px;font-weight:700;font-family:var(--mo)}
+.rg-dash-l{font-size:11px;color:var(--tx2);margin-top:3px}
+.rg-qr{display:inline-block;padding:8px;background:#fff;border-radius:6px;margin-top:8px}
+.rg-tabs{display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap}
+.rg-tab{padding:7px 14px;border:none;background:var(--card2);border-radius:var(--r);cursor:pointer;font-weight:600;font-size:12px;color:var(--tx2);font-family:var(--fn);transition:var(--tr);border:1px solid var(--bd)}
+.rg-tab.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.rg-tab:hover:not(.on){background:var(--card3);color:var(--tx)}
+/* ─── PIN GATE ─────────────────────────────────────────── */
+#pinGate{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;padding:18px}
+#pinGate.hidden{display:none}
+.pin-box{background:var(--card);border-radius:var(--r3);padding:30px;max-width:360px;width:100%;box-shadow:var(--sh3);border:1px solid var(--bd);text-align:center}
+.pin-icon{font-size:48px;margin-bottom:10px}
+.pin-title{font-size:18px;font-weight:700;margin-bottom:4px}
+.pin-sub{font-size:12px;color:var(--tx2);margin-bottom:18px}
+.pin-inp{width:100%;padding:12px;border:2px solid var(--ibd);border-radius:var(--r);font-size:20px;background:var(--ibg);color:var(--tx);font-family:var(--mo);text-align:center;letter-spacing:8px;outline:none;transition:var(--tr)}
+.pin-inp:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(99,102,241,.1)}
+.pin-err{font-size:12px;color:var(--red);margin-top:8px;display:none}
+.pin-btn{width:100%;padding:11px;border:none;border-radius:var(--r);background:linear-gradient(135deg,var(--acc),#a855f7);color:#fff;font-weight:700;font-size:14px;cursor:pointer;font-family:var(--fn);transition:var(--tr);margin-top:12px}
+.pin-btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(99,102,241,.35)}
+</style>
+</head>
+<body>
+<!-- PIN GATE -->
+<div id="pinGate">
+  <div class="pin-box">
+    <div class="pin-icon">🔐</div>
+    <div class="pin-title">KM.DEV — Private Access</div>
+    <div class="pin-sub">Enter your PIN to open the shop</div>
+    <input class="pin-inp" type="password" id="pinInput" maxlength="10" autofocus onkeyup="if(event.key==='Enter')checkPin()">
+    <div class="pin-err" id="pinErr">Wrong PIN — try again</div>
+    <button class="pin-btn" onclick="checkPin()">Unlock</button>
+  </div>
+</div>
+<script>if(sessionStorage.getItem('km_pin'))document.getElementById('pinGate').classList.add('hidden');</script>
+<div class="wrap">
+
+<!-- AUTH BAR -->
+<div class="abar guest" id="abar" style="display:none">
+  <div class="al">
+    <span class="badge bl" id="abadge">LOCAL</span>
+    <span id="ainfo">Not signed in — data saved in this browser only</span>
+  </div>
+  <div class="srow">
+    <span class="sdot sd-off" id="sdot"></span>
+    <span id="slbl">Offline</span>
+    <button class="hb" style="background:linear-gradient(135deg,var(--acc),#a855f7);color:#fff;padding:6px 12px;margin-left:6px;font-size:12px" id="abtn" onclick="openAuth()">Login / Sign Up</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="htop">
+    <div class="brand">
+      <div class="bico" id="hdrLogo" style="width:52px;height:52px"><img src="/logo.png" style="width:100%;height:100%;object-fit:contain;border-radius:10px" alt="KM DEV"></div>
+      <div>
+        <h1 id="hdrBizName">KM DEV — Shop <span style="font-size:11px;color:var(--acc2);font-family:var(--mo);background:rgba(99,102,241,.1);padding:2px 7px;border-radius:6px;margin-left:4px">v2</span></h1>
+        <p id="smode">Private · KM DEV</p>
+      </div>
+    </div>
+    <div class="hr">
+      <a href="/" class="tbtn2" style="text-decoration:none">🏠 Home</a>
+      <button class="tbtn2" id="thbtn" onclick="toggleTheme()">🌙 Dark</button>
+      <button class="tbtn2" onclick="expDB()">📤 Export</button>
+      <label class="tbtn2" style="cursor:pointer">📥 Import<input type="file" id="iFile" accept=".json" style="display:none" onchange="impDB(event)"></label>
+      <button class="tbtn2" onclick="pushAll()" id="syncBtn" style="display:none">☁️ Push to Cloud</button>
+      <button class="tbtn2" onclick="doLogout()" style="color:var(--red)">🚪 Logout</button>
+    </div>
+  </div>
+  <div class="cbar">
+    <span>Need help?</span>
+    <span>📞 <a href="tel:0601603996">060 160 3996</a></span>
+    <span><a href="https://wa.me/27601603996" target="_blank">WhatsApp</a></span>
+    <span><a href="mailto:kgomotsothabo2004@gmail.com">Email</a></span>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tb on" id="t-nr" onclick="gto('nr',this)">🧾 New Receipt</button>
+  <button class="tb" id="t-hi" onclick="gto('hi',this)">📋 History</button>
+  <button class="tb" id="t-rp" onclick="gto('rp',this)">🔧 Repairs <span class="tb-badge" id="rep-badge">0</span></button>
+  <button class="tb" id="t-iv" onclick="gto('iv',this)">📦 Inventory</button>
+  <button class="tb" id="t-an" onclick="gto('an',this)">📊 Analytics</button>
+  <button class="tb" id="t-cu" onclick="gto('cu',this)">👤 Customers</button>
+  <button class="tb" id="t-se" onclick="gto('se',this)">⚙️ Settings</button>
+  <button class="tb" id="t-rg" onclick="gto('rg',this)">🧾 Receipt Generator</button>
+  <button class="tb" id="t-al" onclick="gto('al',this)">📜 Activity Log</button>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- ── NEW RECEIPT ─────────────────────────────────────────── -->
+  <div id="nr" class="pane on">
+    <div class="wb">💡 Log in above to sync receipts across all your devices automatically.</div>
+    <div class="st">Customer Info</div>
+    <div class="fg">
+      <div class="fi"><label>Phone *</label><input type="tel" id="cp" placeholder="0821234567" oninput="autoFill()"></div>
+      <div class="fi"><label>Name</label><input type="text" id="cn" placeholder="John Doe"></div>
+      <div class="fi"><label>Email</label><input type="email" id="ce" placeholder="customer@email.com"></div>
+    </div>
+    <div class="st">Add Item</div>
+    <div class="fg fg3">
+      <div class="fi"><label>Description *</label><input type="text" id="id_" placeholder="e.g. Screen replacement"></div>
+      <div class="fi"><label>Category *</label>
+        <select id="ic">
+          <option>Repair Service</option><option>Software Update</option><option>Battery Replacement</option>
+          <option>Screen Protector</option><option>Phone Case</option><option>Charger</option>
+          <option>Cable / Adapter</option><option>Earphones</option><option>Memory Card</option>
+          <option>SIM Card</option><option>Other Accessories</option>
+        </select>
+      </div>
+      <div class="fi"><label>Qty *</label><input type="number" id="iq" value="1" min="1"></div>
+      <div class="fi"><label>Unit Price (R) *</label><input type="number" id="ip" placeholder="0.00" step="0.01" min="0"></div>
+    </div>
+    <div class="dr">
+      <input type="checkbox" id="adc" onchange="togD()">
+      <label for="adc">Discount %</label>
+      <input type="number" id="dp" class="dinp" placeholder="10" min="0" max="100" disabled>
+      <span id="dpv" style="font-size:12px;color:var(--grn);font-weight:600;font-family:var(--mo)"></span>
+    </div>
+    <button class="btn bp bfw" onclick="addIt()">+ Add Item to Receipt</button>
+
+    <div id="itC" style="display:none;margin-top:16px">
+      <div class="st">Items on Receipt</div>
+      <div class="tsc"><table><thead><tr><th>Description</th><th>Category</th><th>Qty</th><th>Unit Price</th><th>Total</th><th></th></tr></thead><tbody id="itB"></tbody></table></div>
+    </div>
+
+    <div class="scard" id="sC" style="display:none">
+      <div class="sc-top">
+        <div>
+          <div class="sc-lbl">ITEMS</div>
+          <span id="tI" style="font-size:20px;font-weight:800">0</span>
+        </div>
+        <div style="text-align:right">
+          <div class="sc-lbl">GRAND TOTAL</div>
+          <div class="sc-tot">R <span id="tA">0.00</span></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:12px">
+        <div class="fi" style="color:#fff">
+          <label style="color:rgba(255,255,255,.7)">Payment Status</label>
+          <select id="rPS" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff">
+            <option value="unpaid">Unpaid</option>
+            <option value="partial">Partial Payment</option>
+            <option value="paid">Paid in Full</option>
+          </select>
+        </div>
+        <div class="fi" style="color:#fff">
+          <label style="color:rgba(255,255,255,.7)">Payment Method</label>
+          <select id="rPM" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff">
+            <option value="">Select method</option>
+            <option value="cash">Cash</option>
+            <option value="card">Card</option>
+            <option value="eft">EFT</option>
+            <option value="payshap">PayShap</option>
+            <option value="bank_transfer">Bank Transfer</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="fi" style="color:#fff" id="amtPaidWrap">
+          <label style="color:rgba(255,255,255,.7)">Amount Paid (R)</label>
+          <input type="number" id="rAP" placeholder="0.00" step="0.01" min="0" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff">
+        </div>
+      </div>
+      <textarea class="na" id="rN" placeholder="Optional notes..."></textarea>
+      <div class="arow">
+        <button class="btn bs" style="flex:1" onclick="saveR()">💾 Save &amp; Generate Receipt</button>
+        <button class="btn bg" onclick="clearR()">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── HISTORY ─────────────────────────────────────────── -->
+  <div id="hi" class="pane">
+    <div class="sb">
+      <input type="text" id="sT" placeholder="Search phone, name, receipt code..." onkeyup="if(event.key==='Enter')srch()">
+      <select id="sPay" onchange="srch()">
+        <option value="">All payments</option>
+        <option value="unpaid">Unpaid</option>
+        <option value="partial">Partial</option>
+        <option value="paid">Paid</option>
+      </select>
+      <button class="btn bp" onclick="srch()">Search</button>
+      <button class="btn bg" onclick="ldAll()">All</button>
+    </div>
+    <div id="sR"><div class="empty"><div class="eico">📋</div><p>No receipts yet</p></div></div>
+  </div>
+
+  <!-- ── REPAIRS ─────────────────────────────────────────── -->
+  <div id="rp" class="pane">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+      <div class="sb" style="margin:0;flex:1">
+        <input type="text" id="rSearch" placeholder="Search by customer, device, job code..." oninput="filtRep()">
+        <select id="rStatusF" onchange="filtRep()">
+          <option value="">All statuses</option>
+          <option value="received">Received</option>
+          <option value="diagnosing">Diagnosing</option>
+          <option value="repairing">Repairing</option>
+          <option value="testing">Testing</option>
+          <option value="ready">Ready for collection</option>
+          <option value="collected">Collected</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+      <button class="btn bp" onclick="openNewJob()">+ New Repair Job</button>
+    </div>
+    <div id="repL"><div class="empty"><div class="eico">🔧</div><p>No repair jobs yet</p></div></div>
+  </div>
+
+  <!-- ── INVENTORY ─────────────────────────────────────────── -->
+  <div id="iv" class="pane">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+      <div class="sb" style="margin:0;flex:1">
+        <input type="text" id="invSearch" placeholder="Search inventory..." oninput="filtInv()">
+        <select id="invCatF" onchange="filtInv()">
+          <option value="">All categories</option>
+          <option>Repair Parts</option><option>Accessories</option><option>Cables</option>
+          <option>Cases</option><option>Screen Protectors</option><option>Chargers</option><option>Other</option>
+        </select>
+      </div>
+      <button class="btn bp" onclick="openNewInv()">+ Add Stock Item</button>
+    </div>
+    <div id="invAlert" class="wb wb-red" style="display:none">⚠️ Some items are below their low-stock threshold!</div>
+    <div id="invL"><div class="empty"><div class="eico">📦</div><p>No inventory items yet</p></div></div>
+  </div>
+
+  <!-- ── ANALYTICS ─────────────────────────────────────────── -->
+  <div id="an" class="pane">
+    <div class="stat-grid" id="anaStats"></div>
+    <div class="charts-grid">
+      <div class="chart-wrap" style="grid-column:1/-1">
+        <div class="chart-title">Revenue (last 30 days)</div>
+        <canvas id="revChart" height="80"></canvas>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-title">Sales by Category</div>
+        <canvas id="catChart" height="160"></canvas>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-title">Payment Status Breakdown</div>
+        <canvas id="payChart" height="160"></canvas>
+      </div>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-title">Top 10 Customers by Revenue</div>
+      <div id="topCuL"></div>
+    </div>
+  </div>
+
+  <!-- ── CUSTOMERS ─────────────────────────────────────────── -->
+  <div id="cu" class="pane">
+    <input class="cs" type="text" id="cSrch" placeholder="Search customers..." oninput="filtCu()">
+    <div id="cuL"></div>
+  </div>
+
+  <!-- ── SETTINGS ─────────────────────────────────────────── -->
+  <div id="se" class="pane">
+    <div id="sLk" class="slk">
+      <div style="font-size:48px;margin-bottom:10px">🔒</div>
+      <h2 style="margin-bottom:8px">Settings Locked</h2>
+      <p style="color:var(--tx2);margin-bottom:16px;font-size:13px">Enter password to access company settings</p>
+      <div style="max-width:320px;margin:0 auto">
+        <input type="password" id="pI" placeholder="Enter password" style="width:100%;padding:10px 12px;border-radius:var(--r);border:1.5px solid var(--ibd);background:var(--ibg);color:var(--tx);font-size:14px;font-family:var(--fn);margin-bottom:8px" onkeyup="if(event.key==='Enter')unlk()">
+        <button class="btn bp" onclick="unlk()" style="width:100%">Unlock Settings</button>
+        <p style="margin-top:8px;color:var(--tx3);font-size:11px">Default: <span style="font-family:var(--mo);color:var(--acc2)">admin123</span></p>
+      </div>
+    </div>
+    <div id="sUl" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <h2>Company Settings</h2>
+        <button class="btn bd" onclick="lkS()">🔒 Lock</button>
+      </div>
+      <div class="fg">
+        <div class="fi"><label>Company Name</label><input type="text" id="sN"></div>
+        <div class="fi"><label>Phone</label><input type="tel" id="sPh"></div>
+        <div class="fi"><label>Email</label><input type="email" id="sEm"></div>
+        <div class="fi"><label>Address</label><input type="text" id="sAd"></div>
+      </div>
+      <div class="fi" style="margin-top:4px"><label>Warranty / Terms</label><textarea id="sW" rows="2"></textarea></div>
+      <div class="fi" style="margin-top:13px">
+        <label>Company Logo</label>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap">
+          <input type="file" id="lIn" accept="image/*" style="display:none" onchange="upLogo(event)">
+          <button class="btn bg" onclick="document.getElementById('lIn').click()">Upload Logo</button>
+          <span id="lSt" style="font-size:12px;color:var(--tx2)">No logo uploaded</span>
+        </div>
+        <div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <label style="font-size:11px;font-weight:700;color:var(--tx2)">Logo Size:</label>
+          <input type="range" id="logoSize" min="30" max="150" value="52" style="flex:1;min-width:120px;accent-color:var(--acc)" oninput="applyLogoSize(this.value)">
+          <span id="logoSizeVal" style="font-size:12px;font-family:var(--mo);color:var(--tx2);min-width:36px">52px</span>
+        </div>
+        <div id="lPv" class="lprev" style="display:none">
+          <img id="lIm" alt="Logo" style="max-width:100%;max-height:120px;border-radius:var(--r)">
+          <br><button class="btn bd" onclick="rmLogo()" style="margin-top:8px;padding:5px 12px;font-size:12px">Remove</button>
+        </div>
+      </div>
+      <div style="background:var(--card2);padding:14px;border-radius:var(--r);margin:14px 0;border:1px solid var(--bd)">
+        <div class="st" style="margin:0 0 8px">Receipt Preview</div>
+        <div id="settingsPreview" style="background:#fff;color:#111;padding:18px;border-radius:var(--r);text-align:center;border:1px solid var(--bd)">
+        </div>
+        <button class="btn bg" onclick="refreshPreview()" style="margin-top:8px;width:100%">🔄 Refresh Preview</button>
+      </div>
+      <div style="background:var(--card2);padding:14px;border-radius:var(--r);margin:14px 0;border:1px solid var(--bd)">
+        <div class="st" style="margin:0 0 8px">Statistics</div>
+        <div class="sgrid">
+          <div class="stc"><div class="stn" id="tRc">0</div><div class="stl">Receipts</div></div>
+          <div class="stc"><div class="stn" id="tCu">0</div><div class="stl">Customers</div></div>
+          <div class="stc"><div class="stn" id="tRep">0</div><div class="stl">Repair Jobs</div></div>
+          <div class="stc"><div class="stn" id="totR">R0</div><div class="stl">Revenue</div></div>
+          <div class="stc"><div class="stn" id="tInv">0</div><div class="stl">Stock Items</div></div>
+        </div>
+      </div>
+      <div class="st" style="margin-top:18px">Receipt &amp; Inventory Categories</div>
+      <div class="wb" style="margin-bottom:10px">🗂️ These categories appear in the New Receipt and Inventory dropdowns. Synced to cloud when signed in.</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input type="text" id="newCatInp" placeholder="e.g. Charger, Battery, Screen..." style="flex:1;padding:9px 11px;border:1.5px solid var(--ibd);border-radius:var(--r);font-size:13px;background:var(--ibg);color:var(--tx);font-family:var(--fn)" onkeyup="if(event.key==='Enter')addCat()">
+        <button class="btn bp" onclick="addCat()">+ Add</button>
+      </div>
+      <div id="catList" style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px"></div>
+
+      <div class="st" style="margin-top:18px">User Role (this device)</div>
+      <div class="fg">
+        <div class="fi"><label>Role</label>
+          <select id="sRole" onchange="setRole(this.value);toast('Role set to: '+this.value,'ok')">
+            <option value="admin">Admin (full access)</option>
+            <option value="employee">Employee (no print/delete/settings)</option>
+            <option value="technician">Technician (repairs only)</option>
+          </select>
+        </div>
+      </div>
+      <div class="wb" style="margin-top:8px">⚠️ Admin: full access. Employee: create only, cannot print/delete/export. Technician: update repairs only.</div>
+
+      <div class="arow">
+        <button class="btn bs" onclick="savS()">💾 Save Settings</button>
+        <button class="btn bg" onclick="chPwd()">🔑 Change Password</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ACTIVITY LOG ─────────────────────────────────────── -->
+  <div id="al" class="pane">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+      <h2 style="font-size:15px;font-weight:700">Activity Log</h2>
+      <button class="btn bd" onclick="if(confirm('Clear all activity logs?')){sv(AL_KEY,[]);ldActLog();}" style="padding:6px 12px;font-size:12px">Clear Log</button>
+    </div>
+    <div id="actLogList"><div class="empty"><div class="eico">📜</div><p>No activity yet</p></div></div>
+  </div>
+
+  <!-- ── RECEIPT GENERATOR ─────────────────────────────────────── -->
+  <div id="rg" class="pane">
+    <!-- Password Gate -->
+    <div id="rgLock" class="rg-lock">
+      <div style="font-size:48px;margin-bottom:10px">🔐</div>
+      <h2 style="margin-bottom:8px">Administrator Access Required</h2>
+      <p style="color:var(--tx2);margin-bottom:16px;font-size:13px">Enter admin credentials to access Receipt Generator</p>
+      <div style="max-width:320px;margin:0 auto">
+        <input type="email" id="rgEmail" placeholder="Admin email" style="width:100%;padding:10px 12px;border-radius:var(--r);border:1.5px solid var(--ibd);background:var(--ibg);color:var(--tx);font-size:14px;font-family:var(--fn);margin-bottom:8px" onkeyup="if(event.key==='Enter')document.getElementById('rgPwd').focus()">
+        <input type="password" id="rgPwd" placeholder="Enter password" style="width:100%;padding:10px 12px;border-radius:var(--r);border:1.5px solid var(--ibd);background:var(--ibg);color:var(--tx);font-size:14px;font-family:var(--fn);margin-bottom:8px" onkeyup="if(event.key==='Enter')rgUnlock()">
+        <button class="btn bp" onclick="rgUnlock()" style="width:100%" id="rgUnlockBtn">Unlock Receipt Generator</button>
+        <p id="rgAuthMsg" style="margin-top:8px;color:var(--red);font-size:12px;display:none"></p>
+      </div>
+    </div>
+    <!-- Unlocked Content -->
+    <div id="rgContent" style="display:none">
+      <!-- Dashboard Widget -->
+      <div class="rg-dash" id="rgDash">
+        <div class="rg-dash-card"><div class="rg-dash-n" id="rgStatTotal" style="color:var(--acc2)">0</div><div class="rg-dash-l">Generated Receipts</div></div>
+        <div class="rg-dash-card"><div class="rg-dash-n" id="rgStatToday" style="color:var(--grn)">0</div><div class="rg-dash-l">Today's Receipts</div></div>
+        <div class="rg-dash-card"><div class="rg-dash-n" id="rgStatPending" style="color:var(--amb)">0</div><div class="rg-dash-l">Pending Sync</div></div>
+        <div class="rg-dash-card"><div class="rg-dash-n" id="rgStatRevenue" style="color:var(--grn)">R0</div><div class="rg-dash-l">Total Revenue</div></div>
+      </div>
+      <!-- Internal Tabs -->
+      <div class="rg-tabs">
+        <button class="rg-tab on" onclick="rgTab('create')">+ Create Receipt</button>
+        <button class="rg-tab" onclick="rgTab('history')">History</button>
+        <button class="rg-tab" onclick="rgTab('search')">Search</button>
+        <button class="rg-tab" onclick="rgTab('sync')">Sync</button>
+      </div>
+      <!-- CREATE TAB -->
+      <div id="rgCreate" class="rg-panel on">
+        <div class="rg-steps">
+          <span class="rg-step active" id="rgS1">1. Customer</span>
+          <span class="rg-step" id="rgS2">2. Items</span>
+          <span class="rg-step" id="rgS3">3. Review</span>
+        </div>
+        <!-- Step 1: Customer -->
+        <div id="rgStep1" class="rg-panel on">
+          <div class="st">Select or Create Customer</div>
+          <input class="cs" type="text" id="rgCustSearch" placeholder="Search existing customers by name or phone..." oninput="rgFilterCust()">
+          <div id="rgCustList" style="max-height:200px;overflow-y:auto;margin-bottom:12px"></div>
+          <div class="st">Or Enter New Customer</div>
+          <div class="fg">
+            <div class="fi"><label>Name *</label><input type="text" id="rgCName" placeholder="Customer name"></div>
+            <div class="fi"><label>Phone *</label><input type="tel" id="rgCPhone" placeholder="0821234567"></div>
+            <div class="fi"><label>Email</label><input type="email" id="rgCEmail" placeholder="email@example.com"></div>
+          </div>
+          <button class="btn bp" onclick="rgNextStep(2)" style="margin-top:10px">Next → Items</button>
+        </div>
+        <!-- Step 2: Items -->
+        <div id="rgStep2" class="rg-panel">
+          <div class="st">Add Products / Services</div>
+          <div class="fg fg3">
+            <div class="fi"><label>Description *</label><input type="text" id="rgIDesc" placeholder="e.g. Screen repair"></div>
+            <div class="fi"><label>Qty *</label><input type="number" id="rgIQty" value="1" min="1"></div>
+            <div class="fi"><label>Unit Price (R) *</label><input type="number" id="rgIPrice" placeholder="0.00" step="0.01" min="0"></div>
+          </div>
+          <button class="btn bp" onclick="rgAddItem()" style="margin-bottom:12px">+ Add Item</button>
+          <div id="rgItemsList"></div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="btn bg" onclick="rgNextStep(1)">← Back</button>
+            <button class="btn bp" onclick="rgNextStep(3)" style="flex:1">Next → Review</button>
+          </div>
+        </div>
+        <!-- Step 3: Review & Generate -->
+        <div id="rgStep3" class="rg-panel">
+          <div class="st">Receipt Details</div>
+          <div class="fg">
+            <div class="fi"><label>Discount %</label><input type="number" id="rgDiscount" value="0" min="0" max="100"></div>
+            <div class="fi"><label>Payment Status</label>
+              <select id="rgPayStatus">
+                <option value="unpaid">Unpaid</option>
+                <option value="partial">Partial Payment</option>
+                <option value="paid">Paid in Full</option>
+              </select>
+            </div>
+            <div class="fi"><label>Technician</label><input type="text" id="rgTech" placeholder="Technician name"></div>
+          </div>
+          <div class="fi" style="margin-bottom:10px"><label>Notes</label><textarea id="rgNotes" placeholder="Optional notes..."></textarea></div>
+          <div id="rgReviewSummary" style="background:var(--card2);padding:14px;border-radius:var(--r);border:1px solid var(--bd);margin-bottom:12px"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn bg" onclick="rgNextStep(2)">← Back</button>
+            <button class="btn bs" onclick="rgGenerate()" style="flex:1">💾 Generate Receipt</button>
+          </div>
+        </div>
+      </div>
+      <!-- HISTORY TAB -->
+      <div id="rgHistory" class="rg-panel">
+        <div id="rgHistoryList"><div class="empty"><div class="eico">📋</div><p>No generated receipts yet</p></div></div>
+      </div>
+      <!-- SEARCH TAB -->
+      <div id="rgSearch" class="rg-panel">
+        <div class="sb">
+          <input type="text" id="rgSearchInput" placeholder="Search by receipt #, customer, phone, email, date..." onkeyup="if(event.key==='Enter')rgDoSearch()">
+          <button class="btn bp" onclick="rgDoSearch()">Search</button>
+          <button class="btn bg" onclick="rgLoadHistory()">All</button>
+        </div>
+        <div id="rgSearchResults"></div>
+      </div>
+      <!-- SYNC TAB -->
+      <div id="rgSync" class="rg-panel">
+        <div class="st">Sync Status</div>
+        <div id="rgSyncStatus" style="margin-bottom:14px"></div>
+        <div class="arow">
+          <button class="btn bp" onclick="rgPushSync()" style="flex:1">☁️ Push Unsynced Receipts</button>
+          <button class="btn bblu" onclick="rgPullSync()" style="flex:1">⬇️ Pull Cloud Receipts</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /content -->
+</div><!-- /wrap -->
+
+<!-- ─── RECEIPT MODAL ───────────────────────────────────── -->
+<div class="modal" id="rMod">
+  <div class="mbox">
+    <div class="mh"><span class="mt">Receipt Details</span><button class="mx" onclick="closM('rMod')">×</button></div>
+    <div id="mBd"></div>
+  </div>
+</div>
+
+<!-- ─── REPAIR JOB MODAL ─────────────────────────────────── -->
+<div class="modal" id="jobMod">
+  <div class="mbox" style="max-width:700px">
+    <div class="mh"><span class="mt" id="jobModTitle">New Repair Job</span><button class="mx" onclick="closM('jobMod')">×</button></div>
+    <div id="jobMBd">
+      <div class="fg">
+        <div class="fi"><label>Customer Phone *</label><input type="tel" id="jPh" placeholder="0821234567" oninput="autoFillJob()"></div>
+        <div class="fi"><label>Customer Name</label><input type="text" id="jNm" placeholder="John Doe"></div>
+      </div>
+      <div class="fg fg3">
+        <div class="fi"><label>Device Brand *</label><input type="text" id="jBr" placeholder="Samsung, Apple..."></div>
+        <div class="fi"><label>Device Model *</label><input type="text" id="jMo" placeholder="S23, iPhone 14..."></div>
+        <div class="fi"><label>IMEI / Serial</label><input type="text" id="jIM" placeholder="Optional"></div>
+      </div>
+      <div class="fi" style="margin-bottom:10px"><label>Fault Description *</label><textarea id="jFt" placeholder="Describe what's wrong..."></textarea></div>
+      <div class="fg">
+        <div class="fi"><label>Status</label>
+          <select id="jSt">
+            <option value="received">Received</option>
+            <option value="diagnosing">Diagnosing</option>
+            <option value="repairing">Repairing</option>
+            <option value="testing">Testing</option>
+            <option value="ready">Ready for Collection</option>
+            <option value="collected">Collected</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div class="fi"><label>Priority</label>
+          <select id="jPr">
+            <option value="normal">Normal</option>
+            <option value="low">Low</option>
+            <option value="high">High</option>
+            <option value="urgent">Urgent</option>
+          </select>
+        </div>
+        <div class="fi"><label>Due Date</label><input type="date" id="jDue"></div>
+      </div>
+      <div class="fg">
+        <div class="fi"><label>Estimated Cost (R)</label><input type="number" id="jEC" placeholder="0.00" step="0.01" min="0"></div>
+        <div class="fi"><label>Actual Cost (R)</label><input type="number" id="jAC" placeholder="0.00" step="0.01" min="0"></div>
+        <div class="fi"><label>Deposit Paid (R)</label><input type="number" id="jDP" placeholder="0.00" step="0.01" min="0"></div>
+      </div>
+      <div class="fi" style="margin-bottom:10px"><label>Technician Notes</label><textarea id="jTN" placeholder="Internal notes..."></textarea></div>
+      <div class="arow">
+        <button class="btn bp" style="flex:1" onclick="saveJob()">Save Repair Job</button>
+        <button class="btn bg" onclick="closM('jobMod')">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── INVENTORY MODAL ──────────────────────────────────── -->
+<div class="modal" id="invMod">
+  <div class="mbox" style="max-width:600px">
+    <div class="mh"><span class="mt" id="invModTitle">Add Stock Item</span><button class="mx" onclick="closM('invMod')">×</button></div>
+    <div class="fg">
+      <div class="fi"><label>Item Name *</label><input type="text" id="ivNm" placeholder="e.g. iPhone 13 Screen"></div>
+      <div class="fi"><label>SKU / Code</label><input type="text" id="ivSK" placeholder="Optional"></div>
+    </div>
+    <div class="fg fg3">
+      <div class="fi"><label>Category</label>
+        <select id="ivCat">
+          <option>Repair Parts</option><option>Accessories</option><option>Cables</option>
+          <option>Cases</option><option>Screen Protectors</option><option>Chargers</option><option>Other</option>
+        </select>
+      </div>
+      <div class="fi"><label>Quantity</label><input type="number" id="ivQty" value="0" min="0"></div>
+      <div class="fi"><label>Low Stock Alert</label><input type="number" id="ivLS" value="5" min="0"></div>
+    </div>
+    <div class="fg">
+      <div class="fi"><label>Cost Price (R)</label><input type="number" id="ivCP" placeholder="0.00" step="0.01" min="0"></div>
+      <div class="fi"><label>Sale Price (R)</label><input type="number" id="ivSP" placeholder="0.00" step="0.01" min="0"></div>
+      <div class="fi"><label>Supplier</label><input type="text" id="ivSup" placeholder="Optional"></div>
+    </div>
+    <div class="fi" style="margin-bottom:12px"><label>Notes</label><textarea id="ivNt" placeholder="Optional notes..."></textarea></div>
+    <div class="arow">
+      <button class="btn bp" style="flex:1" onclick="saveInvItem()">Save Item</button>
+      <button class="btn bg" onclick="closM('invMod')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── AUTH MODAL ──────────────────────────────────────── -->
+<div id="am">
+
+<!-- ─── RECEIPT GENERATOR MODAL ──────────────────────────── -->
+<div class="modal" id="rgMod">
+  <div class="mbox">
+    <div class="mh"><span class="mt" id="rgModTitle">Generated Receipt</span><button class="mx" onclick="closM('rgMod')">×</button></div>
+    <div id="rgModBody"></div>
+  </div>
+</div>
+  <div class="ab" style="position:relative">
+    <button onclick="asGuest()" style="position:absolute;top:10px;right:10px;background:var(--card3);border:1px solid var(--bd);color:var(--tx2);width:28px;height:28px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;font-family:var(--fn);transition:var(--tr)" title="Continue as guest">&times;</button>
+    <div class="ai">
+      <div id="amLogo" style="margin-bottom:4px"><img src="/logo.png" style="max-height:60px;max-width:120px;border-radius:8px;object-fit:contain" alt="KM DEV"></div>
+      <h2 id="amBizName">KM DEV</h2>
+      <p>Sign in to sync across all devices</p>
+    </div>
+    <div class="ats">
+      <button class="at on" id="atL" onclick="swAuth('login')">Login</button>
+      <button class="at" id="atS" onclick="swAuth('signup')">Sign Up</button>
+      <button class="at" id="atR" onclick="swAuth('reset')">Reset</button>
+    </div>
+    <button class="oauth-btn" id="gglBtn" onclick="oauthLogin('google')">
+      <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Continue with Google
+    </button>
+    <button class="oauth-btn" id="ghBtn" onclick="oauthLogin('github')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+      Continue with GitHub
+    </button>
+    <div class="adv">or use email</div>
+    <div id="aEmailSec">
+      <input class="ain" type="email" id="aEm" placeholder="Email address">
+      <input class="ain" type="password" id="aPw" placeholder="Password" onkeyup="if(event.key==='Enter')doAuth()">
+      <input class="ain" type="password" id="aPw2" placeholder="Confirm password" style="display:none" onkeyup="if(event.key==='Enter')doAuth()">
+      <button class="asub" id="aSub" onclick="doAuth()">Login</button>
+      <p id="aForgot" style="text-align:center;margin-top:8px;font-size:12px;color:var(--tx2)">
+        Forgot password? <span onclick="swAuth('reset')" style="color:var(--acc2);cursor:pointer;font-weight:600">Reset it</span>
+      </p>
+    </div>
+    <div id="aResetSec" style="display:none">
+      <p style="font-size:12px;color:var(--tx2);margin-bottom:10px;text-align:center">Enter your email to receive a reset link</p>
+      <input class="ain" type="email" id="aRstEm" placeholder="Email address" onkeyup="if(event.key==='Enter')doReset()">
+      <button class="asub" onclick="doReset()">Send Reset Link</button>
+    </div>
+    <div class="amsg" id="amsg"></div>
+    <div class="adv">or</div>
+    <button class="agu" onclick="asGuest()">Continue as Guest (local only)</button>
+    <p style="margin-top:10px;font-size:10px;color:var(--tx3);text-align:center">Secured with row-level security.</p>
+  </div>
+</div>
+
+<!-- ─── CONFIRM DIALOG ──────────────────────────────────── -->
+<div id="cdialog">
+  <div class="cdb">
+    <div class="cdb-icon" id="cdicon">⚠️</div>
+    <div class="cdb-title" id="cdtitle">Are you sure?</div>
+    <div class="cdb-msg" id="cdmsg"></div>
+    <input class="cdb-inp" id="cdinp" type="text">
+    <div class="cdb-row">
+      <button class="btn bg" style="flex:1" id="cdCancel" onclick="cdResolve(false)">Cancel</button>
+      <button class="btn bp" style="flex:1" id="cdOk" onclick="cdResolve(true)">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── LOADING ──────────────────────────────────────────── -->
+<div id="loading"><div class="spin"></div></div>
+
+<div id="toast"></div>
+
+<script>
+// ── GLOBALS ────────────────────────────────────────────────
+var K = {r:'km_rec', c:'km_cus', s:'km_cfg', rep:'km_rep', inv:'km_inv', cats:'km_cats'};
+var its = [];
+var cfg = {};
+var CU  = null;
+var AM  = 'login';
+var sb  = null;
+var _editJobId = null;
+var _editInvId = null;
+var _charts    = {};
+
+var DEFAULT_CATS = ['Repair Service','Software Update','Battery Replacement','Screen Protector',
+  'Phone Case','Charger','Cable / Adapter','Earphones','Memory Card','SIM Card','Other Accessories'];
+
+function getCats(){ var c=ld(K.cats); return Array.isArray(c)&&c.length?c:DEFAULT_CATS.slice(); }
+
+// ── API CONFIG ──────────────────────────────────────────────
+// Shop now uses MongoDB API via Next.js
+// Local storage fallback for offline mode
+
+// ── HELPERS ────────────────────────────────────────────────
+function fmt(a){ return parseFloat(a||0).toFixed(2); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function sv(key, data){ try{ localStorage.setItem(key, JSON.stringify(data)); }catch(e){ toast('Storage full! Export your data.','err'); } }
+function ld(key){ try{ var d=localStorage.getItem(key); return d?JSON.parse(d):(key===K.r||key===K.c||key===K.rep||key===K.inv?[]:{});}catch(e){return key===K.r||key===K.c||key===K.rep||key===K.inv?[]:{};} }
+function showL(){ document.getElementById('loading').classList.add('on'); }
+function hideL(){ document.getElementById('loading').classList.remove('on'); }
+
+// ── TOAST ──────────────────────────────────────────────────
+function toast(msg, type, dur){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.className=''; t.classList.add('show');
+  if(type) t.classList.add('t-'+type);
+  clearTimeout(t._t); t._t=setTimeout(function(){ t.classList.remove('show'); }, dur||2800);
+}
+
+// ── CUSTOM DIALOG (replaces alert/confirm/prompt) ──────────
+var _cdResolve = null;
+function cdResolve(val){
+  document.getElementById('cdialog').classList.remove('on');
+  if(_cdResolve){ var inp=document.getElementById('cdinp'); _cdResolve(val?inp.style.display!=='none'?inp.value:true:false); _cdResolve=null; }
+}
+function cdConfirm(msg, icon){
+  return new Promise(function(res){
+    _cdResolve=res;
+    document.getElementById('cdtitle').textContent='Are you sure?';
+    document.getElementById('cdmsg').textContent=msg;
+    document.getElementById('cdicon').textContent=icon||'⚠️';
+    document.getElementById('cdinp').style.display='none';
+    document.getElementById('cdOk').textContent='Confirm';
+    document.getElementById('cdOk').className='btn bd';
+    document.getElementById('cdCancel').style.display='';
+    document.getElementById('cdialog').classList.add('on');
+  });
+}
+function cdAlert(msg, icon){
+  return new Promise(function(res){
+    _cdResolve=function(){ res(); };
+    document.getElementById('cdtitle').textContent='Notice';
+    document.getElementById('cdmsg').textContent=msg;
+    document.getElementById('cdicon').textContent=icon||'ℹ️';
+    document.getElementById('cdinp').style.display='none';
+    document.getElementById('cdOk').textContent='OK';
+    document.getElementById('cdOk').className='btn bp';
+    document.getElementById('cdCancel').style.display='none';
+    document.getElementById('cdialog').classList.add('on');
+  });
+}
+function cdPrompt(msg, placeholder){
+  return new Promise(function(res){
+    _cdResolve=res;
+    document.getElementById('cdtitle').textContent=msg;
+    document.getElementById('cdmsg').textContent='';
+    document.getElementById('cdicon').textContent='✏️';
+    var inp=document.getElementById('cdinp');
+    inp.style.display=''; inp.value=''; inp.placeholder=placeholder||'';
+    document.getElementById('cdOk').textContent='OK';
+    document.getElementById('cdOk').className='btn bp';
+    document.getElementById('cdCancel').style.display='';
+    document.getElementById('cdialog').classList.add('on');
+    setTimeout(function(){ inp.focus(); }, 100);
+  });
+}
+
+// ── BRAND (header + auth modal from DB) ─────────────────────
+function applyBrand(){
+  var name=cfg.companyName||'KM.DEV Shop';
+  var h1=document.getElementById('hdrBizName');
+  if(h1){ var node=h1.childNodes[0]; if(node&&node.nodeType===3) node.textContent=name+' '; }
+  var amn=document.getElementById('amBizName');
+  if(amn) amn.textContent=name;
+  var hLogo=document.getElementById('hdrLogo');
+  var amLogo=document.getElementById('amLogo');
+  var logoSrc=cfg.logo||'/logo.png';
+  if(hLogo){ hLogo.innerHTML='<img src="'+logoSrc+'" style="width:100%;height:100%;object-fit:contain;border-radius:10px" alt="KM DEV">'; var sz=cfg.logoSize||52; hLogo.style.width=sz+'px'; hLogo.style.height=sz+'px'; }
+  if(amLogo){ amLogo.innerHTML='<img src="'+logoSrc+'" style="max-height:60px;max-width:120px;border-radius:8px;object-fit:contain" alt="KM DEV">'; }
+  document.title=name;
+}
+
+// ── CATEGORIES ───────────────────────────────────────────────
+function populateCatSelects(){
+  var cats=getCats();
+  // Receipt form
+  var ic=document.getElementById('ic');
+  if(ic){ var cur=ic.value; ic.innerHTML=''; cats.forEach(function(c){ var o=document.createElement('option'); o.textContent=c; ic.appendChild(o); }); if(cats.includes(cur)) ic.value=cur; }
+  // Inventory form
+  var ivCat=document.getElementById('ivCat');
+  if(ivCat){ var cur2=ivCat.value; ivCat.innerHTML=''; cats.forEach(function(c){ var o=document.createElement('option'); o.textContent=c; ivCat.appendChild(o); }); if(cats.includes(cur2)) ivCat.value=cur2; }
+  // Inventory filter
+  var invCatF=document.getElementById('invCatF');
+  if(invCatF){ var cur3=invCatF.value; invCatF.innerHTML='<option value="">All categories</option>'; cats.forEach(function(c){ var o=document.createElement('option'); o.textContent=c; invCatF.appendChild(o); }); invCatF.value=cur3||''; }
+}
+function renderCatList(){
+  var cats=getCats();
+  var el=document.getElementById('catList'); if(!el) return;
+  el.innerHTML='';
+  cats.forEach(function(c,i){
+    var chip=document.createElement('div');
+    chip.style.cssText='display:inline-flex;align-items:center;gap:5px;background:var(--card3);border:1px solid var(--bd);border-radius:20px;padding:4px 10px 4px 12px;font-size:12px;font-weight:600;color:var(--tx)';
+    chip.innerHTML=esc(c)+'<button onclick="removeCat('+i+')" style="background:none;border:none;cursor:pointer;color:var(--tx3);font-size:14px;line-height:1;padding:0;display:flex;align-items:center" title="Remove">&times;</button>';
+    el.appendChild(chip);
+  });
+}
+function addCat(){
+  var inp=document.getElementById('newCatInp'); if(!inp) return;
+  var val=inp.value.trim(); if(!val) return;
+  var cats=getCats();
+  if(cats.map(function(c){return c.toLowerCase();}).includes(val.toLowerCase())){ toast('Category already exists!','err'); return; }
+  cats.push(val); sv(K.cats,cats); inp.value='';
+  renderCatList(); populateCatSelects(); toast('Category added: '+val,'ok');
+}
+function removeCat(i){
+  var cats=getCats(); cats.splice(i,1); sv(K.cats,cats);
+  renderCatList(); populateCatSelects(); toast('Category removed','ok');
+}
+
+// ── LOAD SETTINGS FROM SUPABASE shop_settings TABLE ──────────
+async function loadSettingsFromDB(){
+  if(!sb||!CU) return;
+  try{
+    var res=await sb.from('shop_settings').select('*').eq('user_id',CU.id).maybeSingle();
+    if(res.data){
+      cfg.companyName=res.data.company_name||cfg.companyName;
+      cfg.phone=res.data.phone||cfg.phone;
+      cfg.email=res.data.email||cfg.email;
+      cfg.address=res.data.address||cfg.address;
+      cfg.warranty=res.data.warranty_text||cfg.warranty;
+      if(res.data.logo_url) cfg.logo=res.data.logo_url;
+      sv(K.s,cfg);
+      applyBrand();
+    }
+    // Load categories from user_data kv store
+    var cr=await sb.from('user_data').select('data_value').eq('user_id',CU.id).eq('data_key',K.cats).maybeSingle();
+    if(cr&&cr.data){ try{ var cats=JSON.parse(cr.data.data_value); if(Array.isArray(cats)&&cats.length){ sv(K.cats,cats); populateCatSelects(); } }catch(e){} }
+  }catch(e){ console.warn('loadSettingsFromDB error:',e.message); }
+}
+
+// ── SAVE SETTINGS TO SUPABASE shop_settings TABLE ────────────
+async function saveSettingsToDB(){
+  if(!sb||!CU) return;
+  try{
+    await sb.from('shop_settings').upsert({
+      user_id:CU.id, company_name:cfg.companyName, phone:cfg.phone,
+      email:cfg.email, address:cfg.address, warranty_text:cfg.warranty,
+      logo_url:cfg.logo||null, updated_at:new Date().toISOString()
+    },{onConflict:'user_id'});
+    await cloudSave(K.cats, getCats());
+  }catch(e){ console.warn('saveSettingsToDB error:',e.message); }
+}
+
+function asGuest(){
+  closeAuth();
+  sessionStorage.setItem('km_guest','1');
+  toast('Continuing as guest — data stays local only');
+}
+var _th = localStorage.getItem('km_th') || 'dark';
+(function(){ applyTh(_th); })();
+function applyTh(t){
+  _th=t;
+  document.documentElement.setAttribute('data-theme',t);
+  var b=document.getElementById('thbtn');
+  if(b) b.textContent=(t==='dark')?'☀️ Light':'🌙 Dark';
+  localStorage.setItem('km_th',t);
+  if(_charts.rev) updateChartTheme();
+}
+function toggleTheme(){ applyTh(_th==='dark'?'light':'dark'); }
+
+// ── BANNER ──────────────────────────────────────────────────
+function setBanner(user){
+  var bar=document.getElementById('abar'), badge=document.getElementById('abadge'),
+      info=document.getElementById('ainfo'), btn=document.getElementById('abtn'),
+      dot=document.getElementById('sdot'), lbl=document.getElementById('slbl'),
+      mode=document.getElementById('smode'), syncBtn=document.getElementById('syncBtn');
+  if(user){
+    CU=user; bar.className='abar logged';
+    badge.className='badge bc'; badge.textContent='CLOUD';
+    info.textContent='Signed in: '+user.email;
+    btn.style.cssText='background:var(--card2);color:var(--tx2);padding:6px 12px;margin-left:6px;border:1.5px solid var(--bd);font-size:12px';
+    btn.textContent='Sign Out'; btn.onclick=doLogout;
+    dot.className='sdot sd-ok'; lbl.textContent='Cloud sync on';
+    mode.textContent='Synced to cloud · KM.DEV';
+    syncBtn.style.display='';
+  } else {
+    CU=null; bar.className='abar guest';
+    badge.className='badge bl'; badge.textContent='LOCAL';
+    info.textContent='Not signed in — data saved in this browser only';
+    btn.style.cssText='background:linear-gradient(135deg,var(--acc),#a855f7);color:#fff;padding:6px 12px;margin-left:6px;font-size:12px';
+    btn.textContent='Login / Sign Up'; btn.onclick=openAuth;
+    dot.className='sdot sd-off'; lbl.textContent='Offline';
+    mode.textContent='Data saved in your browser · KM.DEV';
+    syncBtn.style.display='none';
+  }
+}
+
+// ── CONFIG ──────────────────────────────────────────────────
+function loadCfg(){
+  var d={companyName:'KM DEV',phone:'060 160 3996',email:'kgomotsothabo2004@gmail.com',
+    address:'Gauteng, South Africa',warranty:'Warranty: 30 days on all repairs. Keep your receipt.',
+    password:'admin123',logo:''};
+  try{ var s=localStorage.getItem(K.s); return s?Object.assign({},d,JSON.parse(s)):d; }
+  catch(e){ return d; }
+}
+
+// ── CLOUD ──────────────────────────────────────────────────
+async function cloudSave(key, value){
+  if(!sb||!CU) return;
+  try{
+    document.getElementById('sdot').className='sdot sd-sy';
+    var res=await sb.from('user_data').upsert(
+      {user_id:CU.id,data_key:key,data_value:JSON.stringify(value),updated_at:new Date().toISOString()},
+      {onConflict:'user_id,data_key'}
+    );
+    document.getElementById('sdot').className=res.error?'sdot sd-off':'sdot sd-ok';
+  }catch(e){ document.getElementById('sdot').className='sdot sd-off'; }
+}
+
+async function syncDown(){
+  if(!CU) return;
+  toast('Syncing from cloud...', '', 2000);
+  document.getElementById('sdot').className='sdot sd-sy';
+  document.getElementById('slbl').textContent='Syncing...';
+  try{
+    var rres=await sb.from('receipts').select('*').eq('user_id',CU.id).order('date',{ascending:false});
+    if(!rres.error&&rres.data){
+      sv(K.r, rres.data.map(function(r){
+        return {id:r.id,receiptCode:r.receipt_code,customerPhone:r.customer_phone,
+          customerName:r.customer_name,customerEmail:r.customer_email||'',date:r.date,
+          items:r.items||[],total:parseFloat(r.total||0),notes:r.notes||'',
+          paymentStatus:r.payment_status||'unpaid',amountPaid:parseFloat(r.amount_paid||0)};
+      }));
+    }
+    document.getElementById('sdot').className='sdot sd-ok';
+    document.getElementById('slbl').textContent='Cloud sync on';
+    toast('Synced! '+(rres.data||[]).length+' receipts.', 'ok');
+    ldAll(); updRepBadge(); updInvAlert();
+  }catch(e){
+    document.getElementById('sdot').className='sdot sd-off';
+    toast('Sync failed — check connection', 'err');
+  }
+}
+
+async function pushAll(){
+  if(!CU||!sb) return;
+  showL();
+  var recs=ld(K.r);
+  for(var i=0;i<recs.length;i++){
+    var rec=recs[i];
+    await sb.from('receipts').upsert({
+      id:rec.id, user_id:CU.id, receipt_code:rec.receiptCode,
+      customer_phone:rec.customerPhone, customer_name:rec.customerName,
+      customer_email:rec.customerEmail||null, date:rec.date, items:rec.items,
+      total:rec.total, notes:rec.notes||null,
+      payment_status:rec.paymentStatus||'unpaid', amount_paid:rec.amountPaid||0
+    },{onConflict:'id'});
+  }
+  hideL();
+  toast('Done! '+recs.length+' receipts pushed.', 'ok');
+}
+
+// ── AUTH ──────────────────────────────────────────────────
+function openAuth(){ document.getElementById('am').classList.add('on'); }
+function closeAuth(){ document.getElementById('am').classList.remove('on'); document.getElementById('amsg').style.display='none'; }
+function swAuth(m){
+  AM=m;
+  ['L','S','R'].forEach(function(x){ document.getElementById('at'+x).classList.remove('on'); });
+  document.getElementById('at'+m[0].toUpperCase()).classList.add('on');
+  var isReset=(m==='reset');
+  document.getElementById('aEmailSec').style.display=isReset?'none':'block';
+  document.getElementById('aResetSec').style.display=isReset?'block':'none';
+  document.getElementById('gglBtn').style.display=isReset?'none':'flex';
+  document.getElementById('ghBtn').style.display=isReset?'none':'flex';
+  if(!isReset){
+    document.getElementById('aPw2').style.display=m==='signup'?'block':'none';
+    document.getElementById('aSub').textContent=m==='login'?'Login':'Create Account';
+    document.getElementById('aForgot').style.display=m==='login'?'block':'none';
+  }
+  document.getElementById('amsg').style.display='none';
+}
+function showAuthMsg(msg,type){
+  var el=document.getElementById('amsg');
+  el.textContent=msg; el.className='amsg '+type; el.style.display='block';
+}
+async function doAuth(){
+  var btn=document.getElementById('aSub');
+  if(!sb){
+    showAuthMsg('⚠️ Cannot connect to server. The app will work in local-only mode.\n\nTo fix this contact Kgomotso:\n📞 060 160 3996 | 💬 wa.me/27601603996','err');
+    return;
+  }
+  var email=document.getElementById('aEm').value.trim();
+  var pass=document.getElementById('aPw').value;
+  var pass2=document.getElementById('aPw2').value;
+  if(!email){ showAuthMsg('Please enter your email address.','err'); return; }
+  if(!pass){  showAuthMsg('Please enter your password.','err'); return; }
+  if(AM==='signup'&&pass!==pass2){ showAuthMsg('Passwords do not match — please re-enter.','err'); return; }
+  if(pass.length<6){ showAuthMsg('Password must be at least 6 characters.','err'); return; }
+  btn.textContent='Please wait...'; btn.disabled=true;
+  try{
+    var res=(AM==='login')
+      ?await sb.auth.signInWithPassword({email:email,password:pass})
+      :await sb.auth.signUp({email:email,password:pass});
+    if(res.error){
+      var msg=res.error.message||'Unknown error';
+      var friendly=msg;
+      if(msg.includes('Invalid login credentials')) friendly='❌ Wrong email or password. Please check and try again.';
+      else if(msg.includes('Email not confirmed'))   friendly='📧 Please check your email and click the confirmation link first.';
+      else if(msg.includes('User already registered')) friendly='⚠️ An account with this email already exists. Try logging in instead.';
+      else if(msg.includes('rate limit'))            friendly='⏳ Too many attempts. Please wait a minute and try again.';
+      else if(msg.includes('network')||msg.includes('fetch')) friendly='🌐 Network error. Check your internet connection.';
+      showAuthMsg(friendly+' — Need help? Call Kgomotso: 060 160 3996','err');
+      btn.textContent=AM==='login'?'Login':'Create Account'; btn.disabled=false;
+      return;
+    }
+    if(AM==='signup'&&res.data&&!res.data.session){
+      showAuthMsg('✅ Account created! Check your email for a confirmation link, then log in.','ok');
+      btn.textContent='Create Account'; btn.disabled=false;
+      return;
+    }
+    btn.disabled=false;
+    closeAuth(); setBanner(res.data.user); toast('Welcome '+email+'!','ok'); logAct('Login',email); await syncDown();
+  }catch(e){
+    var errMsg=e.message||'Unknown error';
+    if(errMsg.includes('fetch')||errMsg.includes('network')||errMsg.includes('Failed to fetch')){
+      showAuthMsg('🌐 Cannot reach the server. Check your internet connection.\nStill broken? Contact Kgomotso: 060 160 3996','err');
+    } else {
+      showAuthMsg('❌ Error: '+errMsg+'\n\nContact Kgomotso to fix: 060 160 3996','err');
+    }
+    btn.textContent=AM==='login'?'Login':'Create Account'; btn.disabled=false;
+  }
+}
+async function doLogout(){ logAct('Logout',''); if(sb) await sb.auth.signOut(); setBanner(null); toast('Signed out.'); }
+async function oauthLogin(provider){
+  if(!sb){ showAuthMsg('⚠️ Cannot connect. Contact Kgomotso: 060 160 3996 | wa.me/27601603996','err'); return; }
+  try{
+    var res=await sb.auth.signInWithOAuth({provider:provider,options:{redirectTo:window.location.href}});
+    if(res.error) showAuthMsg('❌ '+res.error.message+' — Contact Kgomotso: 060 160 3996','err');
+  }catch(e){ showAuthMsg('❌ OAuth failed: '+e.message+' — Contact Kgomotso: 060 160 3996','err'); }
+}
+async function doReset(){
+  if(!sb) return;
+  var email=document.getElementById('aRstEm').value.trim();
+  if(!email){ showAuthMsg('Enter your email address first.','err'); return; }
+  var res=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.href});
+  if(res.error) showAuthMsg(res.error.message,'err');
+  else showAuthMsg('Password reset email sent!','ok');
+}
+
+// ── TABS ──────────────────────────────────────────────────
+function gto(id, btn){
+  document.querySelectorAll('.pane').forEach(function(x){ x.classList.remove('on'); });
+  document.querySelectorAll('.tb').forEach(function(x){ x.classList.remove('on'); });
+  document.getElementById(id).classList.add('on'); btn.classList.add('on');
+  if(id==='hi') ldAll();
+  else if(id==='cu') ldCu();
+  else if(id==='se') ldS();
+  else if(id==='rp') ldRep();
+  else if(id==='iv') ldInv();
+  else if(id==='an') ldAnalytics();
+  else if(id==='rg') rgUpdateDash();
+  else if(id==='al') ldActLog();
+}
+
+// ── RECEIPT CODE ──────────────────────────────────────────
+function genCode(){
+  var y=new Date().getFullYear(), ch='ABCDEFGHJKLMNPQRSTUVWXYZ23456789', s='';
+  for(var i=0;i<6;i++) s+=ch[Math.floor(Math.random()*ch.length)];
+  return 'RCP-'+y+'-'+s;
+}
+function genJobCode(){
+  var ch='ABCDEFGHJKLMNPQRSTUVWXYZ23456789', s='';
+  for(var i=0;i<6;i++) s+=ch[Math.floor(Math.random()*ch.length)];
+  return 'JOB-'+s;
+}
+
+// ── AUTO-FILL ──────────────────────────────────────────────
+function autoFill(){
+  var ph=document.getElementById('cp').value.trim();
+  if(ph.length>=10){
+    var f=ld(K.c).find(function(c){ return c.phone===ph; });
+    if(f){
+      if(f.name&&!document.getElementById('cn').value) document.getElementById('cn').value=f.name;
+      if(f.email&&!document.getElementById('ce').value) document.getElementById('ce').value=f.email||'';
+    }
+  }
+}
+function autoFillJob(){
+  var ph=document.getElementById('jPh').value.trim();
+  if(ph.length>=10){
+    var f=ld(K.c).find(function(c){ return c.phone===ph; });
+    if(f&&!document.getElementById('jNm').value) document.getElementById('jNm').value=f.name;
+  }
+}
+
+// ── DISCOUNT ──────────────────────────────────────────────
+function togD(){
+  var on=document.getElementById('adc').checked;
+  document.getElementById('dp').disabled=!on;
+  if(!on){ document.getElementById('dp').value=''; document.getElementById('dpv').textContent=''; }
+}
+
+// ── ADD ITEM ──────────────────────────────────────────────
+function addIt(){
+  var d=document.getElementById('id_').value.trim();
+  var cat=document.getElementById('ic').value;
+  var q=parseInt(document.getElementById('iq').value);
+  var p=parseFloat(document.getElementById('ip').value);
+  if(!d){ cdAlert('Please enter a description!','⚠️'); document.getElementById('id_').focus(); return; }
+  if(!p||p<=0){ cdAlert('Please enter a valid price!','⚠️'); document.getElementById('ip').focus(); return; }
+  if(!q||q<=0){ cdAlert('Please enter a valid quantity!','⚠️'); return; }
+  var tot=q*p, disc=0;
+  if(document.getElementById('adc').checked){
+    disc=parseFloat(document.getElementById('dp').value)||0;
+    if(disc>0&&disc<=100) tot=tot*(1-disc/100);
+  }
+  its.push({id:Date.now(),description:d,category:cat,quantity:q,price:p,discount:disc,total:tot});
+  renderItems(); clrItemForm(); document.getElementById('id_').focus();
+}
+function rmIt(id){ its=its.filter(function(i){ return i.id!==id; }); renderItems(); }
+function renderItems(){
+  var tb=document.getElementById('itB'),itC=document.getElementById('itC'),sC=document.getElementById('sC');
+  if(!its.length){ itC.style.display='none'; sC.style.display='none'; return; }
+  itC.style.display='block'; sC.style.display='block';
+  var h='';
+  for(var i=0;i<its.length;i++){
+    var it=its[i];
+    h+='<tr><td>'+esc(it.description)+'</td><td>'+esc(it.category)+'</td><td>'+it.quantity+'</td>';
+    h+='<td>R '+fmt(it.price)+(it.discount>0?' <span style="color:var(--grn);font-size:10px">-'+it.discount+'%</span>':'')+'</td>';
+    h+='<td style="font-weight:700">R '+fmt(it.total)+'</td>';
+    h+='<td><button class="btn bd" style="padding:4px 8px;font-size:11px" onclick="rmIt('+it.id+')">×</button></td></tr>';
+  }
+  tb.innerHTML=h;
+  var tot=its.reduce(function(s,i){ return s+i.total; },0);
+  document.getElementById('tI').textContent=its.length;
+  document.getElementById('tA').textContent=fmt(tot);
+}
+function clrItemForm(){
+  ['id_','ip'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('iq').value='1'; document.getElementById('adc').checked=false;
+  document.getElementById('dp').value=''; document.getElementById('dp').disabled=true;
+  document.getElementById('ic').selectedIndex=0; document.getElementById('dpv').textContent='';
+}
+async function clearR(){
+  if(its.length>0&&!(await cdConfirm('Clear all items and customer info?','🗑️'))) return;
+  its=[]; renderItems();
+  ['cp','cn','ce','rN'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('rPS').value='unpaid';
+  document.getElementById('rPM').value='';
+  document.getElementById('rAP').value='';
+}
+
+// ── SAVE RECEIPT ──────────────────────────────────────────
+async function saveR(){
+  var ph=document.getElementById('cp').value.trim(), nm=document.getElementById('cn').value.trim(),
+      em=document.getElementById('ce').value.trim(), nt=document.getElementById('rN').value.trim(),
+      ps=document.getElementById('rPS').value, ap=parseFloat(document.getElementById('rAP').value)||0;
+  if(!ph||ph.length<10){ await cdAlert('Please enter a valid phone number (at least 10 digits)!','📞'); document.getElementById('cp').focus(); return; }
+  if(!its.length){ await cdAlert('Please add at least one item!','⚠️'); return; }
+  var code=genCode(), tot=its.reduce(function(s,i){ return s+i.total; },0);
+  var pm=document.getElementById('rPM').value;
+  var deviceInfo=(/Mobile|Android|iPhone/i.test(navigator.userAgent)?'Mobile':'Desktop')+' — '+navigator.platform;
+  var createdBy=CU?CU.email:(cfg.companyName||'Admin');
+  var rec={id:Date.now(),receiptCode:code,customerPhone:ph,customerName:nm||'Walk-in Customer',
+    customerEmail:em,date:new Date().toISOString(),items:its.slice(),total:tot,notes:nt,
+    paymentStatus:ps,paymentMethod:pm,amountPaid:ps==='paid'?tot:ap,
+    createdBy:createdBy,device:deviceInfo};
+  try{
+    var recs=ld(K.r); recs.push(rec); sv(K.r,recs);
+    var custs=ld(K.c), ex=custs.find(function(c){ return c.phone===ph; });
+    if(ex){ ex.name=nm||ex.name; ex.email=em||ex.email; ex.lastVisit=rec.date; ex.visits=(ex.visits||0)+1; }
+    else custs.push({phone:ph,name:nm||'Walk-in Customer',email:em,firstVisit:rec.date,lastVisit:rec.date,visits:1});
+    sv(K.c,custs);
+    if(CU&&sb){
+      document.getElementById('sdot').className='sdot sd-sy';
+      var res=await sb.from('receipts').insert({
+        id:rec.id,user_id:CU.id,receipt_code:rec.receiptCode,
+        customer_phone:rec.customerPhone,customer_name:rec.customerName,
+        customer_email:rec.customerEmail||null,date:rec.date,items:rec.items,
+        total:rec.total,notes:rec.notes||null,payment_status:ps,amount_paid:rec.amountPaid
+      });
+      document.getElementById('sdot').className=res.error?'sdot sd-off':'sdot sd-ok';
+      toast(res.error?'Saved locally (cloud error)':'Receipt saved to cloud!', res.error?'err':'ok');
+    } else {
+      toast('Receipt saved locally!');
+      logAct('Receipt Created',rec.receiptCode+' — '+rec.customerName);
+    }
+    var prnt=await cdConfirm('Print this receipt now?','🖨️');
+    if(prnt) prtR(rec);
+    clearR();
+  }catch(e){ await cdAlert('Could not save: '+e.message,'❌'); }
+}
+
+// ── HISTORY ──────────────────────────────────────────────
+async function srch(){
+  var t=document.getElementById('sT').value.trim().toLowerCase();
+  var payF=document.getElementById('sPay').value;
+  var recs=ld(K.r);
+  if(t) recs=recs.filter(function(r){
+    return r.customerPhone.includes(t)||(r.customerName||'').toLowerCase().includes(t)||r.receiptCode.toLowerCase().includes(t);
+  });
+  if(payF) recs=recs.filter(function(r){ return (r.paymentStatus||'unpaid')===payF; });
+  shRecs(recs.slice().reverse());
+}
+async function ldAll(){
+  if(CU&&sb){
+    try{
+      var res=await sb.from('receipts').select('*').eq('user_id',CU.id).order('date',{ascending:false});
+      if(!res.error&&res.data&&res.data.length>0){
+        var recs=res.data.map(function(r){
+          return {id:r.id,receiptCode:r.receipt_code,customerPhone:r.customer_phone,
+            customerName:r.customer_name,customerEmail:r.customer_email,date:r.date,
+            items:r.items||[],total:r.total,notes:r.notes||'',
+            paymentStatus:r.payment_status||'unpaid',amountPaid:parseFloat(r.amount_paid||0)};
+        });
+        sv(K.r,recs); shRecs(recs); return;
+      }
+    }catch(e){ console.warn('Cloud load failed, using local'); }
+  }
+  shRecs(ld(K.r).slice().reverse());
+}
+
+function shRecs(recs){
+  var el=document.getElementById('sR');
+  if(!recs.length){ el.innerHTML='<div class="empty"><div class="eico">📋</div><p>No receipts found</p></div>'; return; }
+  var h='';
+  for(var i=0;i<recs.length;i++){
+    var r=recs[i];
+    var ps=r.paymentStatus||'unpaid';
+    var psHtml='<span class="status s-'+ps+'">'+ps+'</span>';
+    h+='<div class="rc" onclick="vRec('+r.id+')">';
+    h+='<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">';
+    h+='<div><div class="rc-code">'+esc(r.receiptCode)+'</div>';
+    h+='<div class="rc-name">'+esc(r.customerName)+'</div>';
+    h+='<div class="rc-sub">'+esc(r.customerPhone)+' · '+new Date(r.date).toLocaleDateString('en-ZA')+'</div></div>';
+    h+='<div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:5px">';
+    h+='<div class="rc-amt">R '+fmt(r.total)+'</div>'+psHtml;
+    h+='<div style="font-size:11px;color:var(--tx2)">'+r.items.length+' item(s)</div></div></div></div>';
+  }
+  el.innerHTML=h;
+}
+
+// ── VIEW RECEIPT MODAL ──────────────────────────────────────
+async function vRec(id){
+  var rec=ld(K.r).find(function(r){ return r.id===id; });
+  if(!rec&&CU&&sb){
+    var res=await sb.from('receipts').select('*').eq('id',id).eq('user_id',CU.id).maybeSingle();
+    if(res.data) rec={id:res.data.id,receiptCode:res.data.receipt_code,customerPhone:res.data.customer_phone,
+      customerName:res.data.customer_name,customerEmail:res.data.customer_email||'',date:res.data.date,
+      items:res.data.items||[],total:parseFloat(res.data.total||0),notes:res.data.notes||'',
+      paymentStatus:res.data.payment_status||'unpaid',amountPaid:parseFloat(res.data.amount_paid||0)};
+  }
+  if(!rec) return;
+  var rows='', ps=rec.paymentStatus||'unpaid';
+  for(var i=0;i<rec.items.length;i++){
+    var it=rec.items[i];
+    rows+='<tr><td>'+esc(it.description)+'</td><td>'+esc(it.category)+'</td><td>'+it.quantity+'</td>';
+    rows+='<td>R '+fmt(it.price)+(it.discount>0?' (-'+it.discount+'%)':'')+'</td>';
+    rows+='<td style="font-weight:700">R '+fmt(it.total)+'</td></tr>';
+  }
+  // WhatsApp share URL
+  var waMsg=encodeURIComponent(
+    '📱 *'+cfg.companyName+'*\n'+'Receipt: *'+rec.receiptCode+'*\n'+'Customer: '+rec.customerName+'\n'+
+    'Date: '+new Date(rec.date).toLocaleDateString('en-ZA')+'\n'+'Total: *R'+fmt(rec.total)+'*\n'+
+    'Payment: '+ps+'\n\nThank you for your business!'
+  );
+  var waLink='https://wa.me/?text='+waMsg;
+  var h='<div class="rco">';
+  h+='<img src="'+(cfg.logo||'/logo.png')+'" style="max-height:50px;margin-bottom:6px;border-radius:6px"><br>';
+  h+='<h2>'+esc(cfg.companyName)+'</h2><p>'+esc(cfg.phone)+' · '+esc(cfg.email)+'</p><p>'+esc(cfg.address)+'</p></div>';
+  h+='<div class="rig">';
+  h+='<div><div class="ril">Receipt Code</div><div class="ricode">'+esc(rec.receiptCode)+'</div></div>';
+  h+='<div><div class="ril">Date</div><div class="riv">'+new Date(rec.date).toLocaleString()+'</div></div>';
+  h+='<div><div class="ril">Customer</div><div class="riv">'+esc(rec.customerName)+'</div></div>';
+  h+='<div><div class="ril">Phone</div><div class="riv">'+esc(rec.customerPhone)+'</div></div>';
+  h+='<div><div class="ril">Payment Status</div><div class="riv"><span class="status s-'+ps+'">'+ps+'</span></div></div>';
+  h+='<div><div class="ril">Payment Method</div><div class="riv">'+esc(rec.paymentMethod||'N/A')+'</div></div>';
+  h+='<div><div class="ril">Amount Paid</div><div class="riv" style="color:var(--grn);font-weight:700">R '+fmt(rec.amountPaid)+'</div></div>';
+  if(rec.createdBy) h+='<div><div class="ril">Created By</div><div class="riv">'+esc(rec.createdBy)+'</div></div>';
+  if(rec.device) h+='<div><div class="ril">Device</div><div class="riv">'+esc(rec.device)+'</div></div>';
+  h+='</div>';
+  h+='<div class="tsc"><table><thead><tr><th>Description</th><th>Category</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  h+='<div class="rtot"><div class="rtl">GRAND TOTAL</div><div class="rta">R '+fmt(rec.total)+'</div></div>';
+  if(rec.notes) h+='<div style="background:var(--card2);padding:10px 12px;border-radius:var(--r);margin-top:10px;font-size:12px;color:var(--tx2);border:1px solid var(--bd)">📝 '+esc(rec.notes)+'</div>';
+  h+='<div style="text-align:center;margin-top:10px;font-size:11px;color:var(--tx3);font-style:italic;padding-top:10px;border-top:1px solid var(--bd)">'+esc(cfg.warranty)+'</div>';
+  // Payment update section
+  h+='<div style="background:var(--card2);padding:12px;border-radius:var(--r);margin-top:12px;border:1px solid var(--bd)">';
+  h+='<div style="font-size:11px;font-weight:700;color:var(--tx2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Update Payment</div>';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">';
+  h+='<div class="fi" style="flex:1;min-width:130px"><label>Status</label><select id="updPS" onchange="updPayWrap()"><option value="unpaid"'+(ps==='unpaid'?' selected':'')+'>Unpaid</option><option value="partial"'+(ps==='partial'?' selected':'')+'>Partial</option><option value="paid"'+(ps==='paid'?' selected':'')+'>Paid</option></select></div>';
+  h+='<div class="fi" style="flex:1;min-width:130px" id="updPAW"><label>Amount Paid (R)</label><input type="number" id="updPA" value="'+rec.amountPaid+'" step="0.01" min="0"></div>';
+  h+='<button class="btn bs" onclick="updPayStatus('+rec.id+')">Save</button></div></div>';
+  h+='<div class="arow" style="margin-top:14px">';
+  h+='<button class="btn bp" onclick="prtById('+rec.id+')" style="flex:1">🖨️ Print</button>';
+  h+='<a href="'+waLink+'" target="_blank" class="btn bs" style="flex:1;text-decoration:none">💬 WhatsApp</a>';
+  h+='<button class="btn bd" onclick="delRec('+rec.id+')" style="flex:1">🗑️ Delete</button>';
+  h+='<button class="btn bg" onclick="closM(\'rMod\')" style="flex:1">Close</button></div>';
+  document.getElementById('mBd').innerHTML=h;
+  document.getElementById('rMod').classList.add('on');
+  updPayWrap();
+}
+function updPayWrap(){
+  var w=document.getElementById('updPAW');
+  if(w) w.style.display=document.getElementById('updPS').value==='paid'?'none':'flex';
+}
+async function updPayStatus(id){
+  var ps=document.getElementById('updPS').value;
+  var ap=ps==='paid'?(ld(K.r).find(function(r){return r.id===id;})||{total:0}).total:parseFloat(document.getElementById('updPA').value)||0;
+  var recs=ld(K.r);
+  var rec=recs.find(function(r){return r.id===id;});
+  if(!rec) return;
+  rec.paymentStatus=ps; rec.amountPaid=ap; sv(K.r,recs);
+  if(CU&&sb) await sb.from('receipts').update({payment_status:ps,amount_paid:ap}).eq('id',id).eq('user_id',CU.id);
+  toast('Payment status updated!', 'ok');
+  closM('rMod');
+}
+
+function prtById(id){ var r=ld(K.r).find(function(r){ return r.id===id; }); if(r) prtR(r); }
+async function delRec(id){
+  if(!canDelete()){await cdAlert('Deleting is restricted to administrators.','🔒');return;}
+  if(!(await cdConfirm('Delete this receipt permanently? This cannot be undone.','🗑️'))) return;
+  var recs=ld(K.r).filter(function(r){ return r.id!==id; }); sv(K.r,recs);
+  if(CU&&sb) await sb.from('receipts').delete().eq('id',id).eq('user_id',CU.id);
+  closM('rMod'); ldAll();
+}
+function closM(id){ document.getElementById(id||'rMod').classList.remove('on'); }
+
+// ── PRINT ──────────────────────────────────────────────────
+function buildPrint(rec){
+  var rows='';
+  for(var i=0;i<rec.items.length;i++){
+    var it=rec.items[i];
+    rows+='<tr><td>'+it.description+'</td><td>'+it.category+'</td><td style="text-align:center">'+it.quantity+'</td>';
+    rows+='<td>R '+fmt(it.price)+(it.discount>0?' (-'+it.discount+'%)':'')+'</td>';
+    rows+='<td><strong>R '+fmt(it.total)+'</strong></td></tr>';
+  }
+  var logo='<div style="text-align:center;margin-bottom:15px"><img src="'+(cfg.logo||'/logo.png')+'" style="max-width:280px;width:100%;height:auto;display:block;margin:0 auto;object-fit:contain;border-radius:6px"></div>';
+  var notes=rec.notes?'<div style="border:1px solid #ddd;padding:10px;border-radius:6px;font-size:9pt;margin-bottom:10px"><strong>Notes:</strong> '+rec.notes+'</div>':'';
+  var ps=rec.paymentStatus||'unpaid';
+  var psColor=ps==='paid'?'#10b981':ps==='partial'?'#f59e0b':'#ef4444';
+  var waMsg=encodeURIComponent('📱 *'+cfg.companyName+'*\nReceipt: *'+rec.receiptCode+'*\nCustomer: '+rec.customerName+'\nTotal: *R'+fmt(rec.total)+'*\nThank you!');
+  var d='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Receipt '+rec.receiptCode+'</title>';
+  d+='<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=DM+Mono:wght@500&display=swap" rel="stylesheet">';
+  d+='<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:"DM Sans",Arial,sans-serif;background:#fff;color:#111;padding:26px;max-width:760px;margin:0 auto;font-size:14px}';
+  d+='.wm{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-38deg);font-size:96pt;font-weight:900;color:rgba(0,0,0,.04);pointer-events:none;white-space:nowrap;user-select:none}';
+  d+='.hdr{display:flex;align-items:flex-start;gap:18px;padding-bottom:14px;border-bottom:2.5px solid #111;margin-bottom:16px}';
+  d+='.co-name{font-size:17pt;font-weight:700;margin-bottom:4px}.co-d{font-size:9pt;color:#555;margin:2px 0}';
+  d+='.rtitle{background:#111;color:#fff;text-align:center;padding:8px;font-size:11pt;font-weight:700;letter-spacing:5px;margin:0 0 14px}';
+  d+='.ibox{background:#f8f8f8;border:1px solid #ddd;border-radius:6px;padding:12px;margin:0 0 14px;display:flex;gap:18px;flex-wrap:wrap}';
+  d+='.icol{flex:1;min-width:160px}.lbl{font-weight:700;font-size:8pt;color:#666;display:inline-block;width:72px}.val{font-size:9pt;color:#111}';
+  d+='.cval{color:#1e40af;font-weight:700;font-family:"DM Mono",monospace;font-size:11pt}';
+  d+='.ps-badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:8pt;font-weight:700;background:'+psColor+'20;color:'+psColor+';border:1px solid '+psColor+'40}';
+  d+='table{width:100%;border-collapse:collapse;margin-bottom:12px}thead tr{background:#111;color:#fff}th{padding:7px;text-align:left;font-size:8pt;font-weight:700}';
+  d+='td{padding:7px;font-size:8pt;border-bottom:1px solid #e8e8e8}tr:nth-child(even) td{background:#f9f9f9}';
+  d+='.tbox{background:#111;color:#fff;padding:12px 16px;border-radius:5px;text-align:right;margin-bottom:12px}';
+  d+='.tbox-l{font-size:9pt;opacity:.7;margin-bottom:2px}.tbox-a{font-size:18pt;font-weight:700;font-family:"DM Mono",monospace}';
+  d+='.warr{text-align:center;font-size:7.5pt;color:#999;font-style:italic;padding:8px 0;border-top:1px dashed #ccc;border-bottom:1px dashed #ccc;margin-bottom:12px}';
+  d+='.pact{display:flex;gap:10px;margin-top:20px;justify-content:center;flex-wrap:wrap}';
+  d+='.pact a,.pact button{padding:12px 24px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;min-width:130px;justify-content:center}';
+  d+='.pbtn{background:#111;color:#fff}.wabtn{background:#25d366;color:#fff}';
+  d+='@media print{.pact{display:none!important}body{padding:12px}}</style></head><body>';
+  d+='<div class="wm">'+rec.receiptCode+'</div>';
+  d+='<div class="hdr" style="flex-direction:column;align-items:center;text-align:center">'+logo+'<div><div class="co-name">'+cfg.companyName.toUpperCase()+'</div>';
+  d+='<div class="co-d">Tel: '+cfg.phone+'</div><div class="co-d">Email: '+cfg.email+'</div>';
+  d+='<div class="co-d">'+cfg.address+'</div></div></div>';
+  d+='<div class="rtitle">OFFICIAL SALES RECEIPT</div>';
+  d+='<div class="ibox"><div class="icol">';
+  d+='<div><span class="lbl">Receipt:</span><span class="cval">'+rec.receiptCode+'</span></div>';
+  d+='<div style="margin-top:4px"><span class="lbl">Date:</span><span class="val">'+new Date(rec.date).toLocaleDateString('en-ZA')+'</span></div>';
+  d+='<div style="margin-top:4px"><span class="lbl">Time:</span><span class="val">'+new Date(rec.date).toLocaleTimeString()+'</span></div>';
+  d+='<div style="margin-top:4px"><span class="lbl">Payment:</span><span class="ps-badge">'+ps+'</span></div>';
+  d+='</div><div class="icol">';
+  d+='<div><span class="lbl">Customer:</span><span class="val">'+rec.customerName+'</span></div>';
+  d+='<div style="margin-top:4px"><span class="lbl">Phone:</span><span class="val">'+rec.customerPhone+'</span></div>';
+  if(rec.customerEmail) d+='<div style="margin-top:4px"><span class="lbl">Email:</span><span class="val">'+rec.customerEmail+'</span></div>';
+  d+='</div></div>';
+  d+='<table><thead><tr><th style="width:36%">Description</th><th style="width:20%">Category</th><th style="width:8%">Qty</th><th style="width:18%">Unit Price</th><th style="width:18%">Total</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  d+='<div class="tbox"><div class="tbox-l">GRAND TOTAL</div><div class="tbox-a">R '+fmt(rec.total)+'</div></div>';
+  d+=notes;
+  d+='<div class="warr">'+cfg.warranty+'</div>';
+  d+='<div class="pact">';
+  d+='<button class="pbtn" onclick="window.print()">🖨️ Print</button>';
+  d+='<a class="wabtn" href="https://wa.me/?text='+waMsg+'" target="_blank">💬 WhatsApp</a>';
+  d+='</div></body></html>';
+  return d;
+}
+function prtR(rec){
+  if(!rec) return;
+  if(!checkPrint()) return;
+  var html=buildPrint(rec);
+  var mob=/Android|iPhone|iPad|iPod|Opera Mini|IEMobile/i.test(navigator.userAgent);
+  try{
+    if(mob){ mobilePrt(html); return; }
+    var w=window.open('','_blank','width=860,height=980,scrollbars=yes');
+    if(!w||w.closed){ mobilePrt(html); return; }
+    w.document.open(); w.document.write(html); w.document.close();
+  }catch(e){ mobilePrt(html); }
+}
+function mobilePrt(html){
+  var blob=new Blob([html],{type:'text/html'}), url=URL.createObjectURL(blob), a=document.createElement('a');
+  a.href=url; a.target='_blank'; a.rel='noopener'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); },20000);
+  toast('Receipt opened — tap Share then Print!', '', 3500);
+}
+
+// ── REPAIR JOBS ──────────────────────────────────────────
+function openNewJob(){
+  _editJobId=null;
+  document.getElementById('jobModTitle').textContent='New Repair Job';
+  ['jPh','jNm','jBr','jMo','jIM','jFt','jTN','jEC','jAC','jDP','jDue'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('jSt').value='received';
+  document.getElementById('jPr').value='normal';
+  document.getElementById('jobMod').classList.add('on');
+}
+async function saveJob(){
+  var ph=document.getElementById('jPh').value.trim(), nm=document.getElementById('jNm').value.trim(),
+      br=document.getElementById('jBr').value.trim(), mo=document.getElementById('jMo').value.trim(),
+      ft=document.getElementById('jFt').value.trim();
+  if(!ph){ await cdAlert('Please enter customer phone.','📞'); return; }
+  if(!br||!mo){ await cdAlert('Please enter device brand and model.','📱'); return; }
+  if(!ft){ await cdAlert('Please describe the fault.','🔧'); return; }
+  var jobs=ld(K.rep);
+  if(_editJobId){
+    var job=jobs.find(function(j){ return j.id===_editJobId; });
+    if(job){
+      job.customerPhone=ph; job.customerName=nm||'Unknown'; job.deviceBrand=br; job.deviceModel=mo;
+      job.imei=document.getElementById('jIM').value.trim(); job.faultDescription=ft;
+      job.status=document.getElementById('jSt').value; job.priority=document.getElementById('jPr').value;
+      job.technicianNotes=document.getElementById('jTN').value.trim();
+      job.estimatedCost=parseFloat(document.getElementById('jEC').value)||0;
+      job.actualCost=parseFloat(document.getElementById('jAC').value)||0;
+      job.depositPaid=parseFloat(document.getElementById('jDP').value)||0;
+      job.dueDate=document.getElementById('jDue').value||null;
+      if(job.status==='collected'&&!job.collectedAt) job.collectedAt=new Date().toISOString();
+      if((job.status==='ready'||job.status==='collected')&&!job.completedAt) job.completedAt=new Date().toISOString();
+    }
+  } else {
+    jobs.push({
+      id:Date.now(), jobCode:genJobCode(), customerPhone:ph, customerName:nm||'Unknown',
+      deviceBrand:br, deviceModel:mo, imei:document.getElementById('jIM').value.trim(),
+      faultDescription:ft, status:document.getElementById('jSt').value,
+      priority:document.getElementById('jPr').value, technicianNotes:document.getElementById('jTN').value.trim(),
+      estimatedCost:parseFloat(document.getElementById('jEC').value)||0,
+      actualCost:parseFloat(document.getElementById('jAC').value)||0,
+      depositPaid:parseFloat(document.getElementById('jDP').value)||0,
+      dueDate:document.getElementById('jDue').value||null,
+      receivedAt:new Date().toISOString(), completedAt:null, collectedAt:null
+    });
+  }
+  sv(K.rep,jobs); closM('jobMod'); ldRep(); updRepBadge();
+  toast(_editJobId?'Job updated!':'Repair job created!', 'ok');
+  logAct(_editJobId?'Repair Updated':'Repair Created',jobs[jobs.length-1]?jobs[jobs.length-1].jobCode:'');
+}
+function ldRep(){
+  var q=(document.getElementById('rSearch')||{value:''}).value.toLowerCase();
+  var sf=(document.getElementById('rStatusF')||{value:''}).value;
+  var jobs=ld(K.rep);
+  if(q) jobs=jobs.filter(function(j){
+    return j.customerPhone.includes(q)||(j.customerName||'').toLowerCase().includes(q)||
+      (j.deviceBrand+' '+j.deviceModel).toLowerCase().includes(q)||j.jobCode.toLowerCase().includes(q);
+  });
+  if(sf) jobs=jobs.filter(function(j){ return j.status===sf; });
+  jobs.sort(function(a,b){ return new Date(b.receivedAt)-new Date(a.receivedAt); });
+  var el=document.getElementById('repL');
+  if(!jobs.length){ el.innerHTML='<div class="empty"><div class="eico">🔧</div><p>No repair jobs found</p></div>'; return; }
+  var h='';
+  for(var i=0;i<jobs.length;i++){
+    var j=jobs[i];
+    var pCls='p-'+j.priority;
+    h+='<div class="job-card" onclick="editJob('+j.id+')">';
+    h+='<div class="job-top"><div>';
+    h+='<div class="job-code">'+esc(j.jobCode)+'</div>';
+    h+='<div class="job-device">'+esc(j.deviceBrand)+' '+esc(j.deviceModel)+'</div>';
+    h+='<div class="job-sub">'+esc(j.customerName)+' · '+esc(j.customerPhone)+'</div>';
+    h+='<div class="job-sub" style="margin-top:4px;color:var(--tx3)">'+esc(j.faultDescription.substring(0,60))+(j.faultDescription.length>60?'...':'')+'</div>';
+    h+='</div><div class="job-right">';
+    h+='<span class="status s-'+j.status+'">'+j.status+'</span>';
+    h+='<span class="status '+pCls+'">'+j.priority+'</span>';
+    if(j.actualCost>0) h+='<span style="color:var(--grn);font-weight:700;font-family:var(--mo);font-size:14px">R '+fmt(j.actualCost)+'</span>';
+    else if(j.estimatedCost>0) h+='<span style="color:var(--tx2);font-size:12px">Est. R '+fmt(j.estimatedCost)+'</span>';
+    h+='<span style="font-size:11px;color:var(--tx3)">'+new Date(j.receivedAt).toLocaleDateString('en-ZA')+'</span>';
+    h+='</div></div>';
+    if(j.dueDate) h+='<div style="font-size:11px;color:var(--amb);margin-top:6px">📅 Due: '+new Date(j.dueDate).toLocaleDateString('en-ZA')+'</div>';
+    h+='</div>';
+  }
+  el.innerHTML=h;
+}
+function filtRep(){ ldRep(); }
+function editJob(id){
+  var j=ld(K.rep).find(function(x){ return x.id===id; });
+  if(!j) return;
+  _editJobId=id;
+  document.getElementById('jobModTitle').textContent='Edit Repair Job — '+j.jobCode;
+  document.getElementById('jPh').value=j.customerPhone;
+  document.getElementById('jNm').value=j.customerName;
+  document.getElementById('jBr').value=j.deviceBrand;
+  document.getElementById('jMo').value=j.deviceModel;
+  document.getElementById('jIM').value=j.imei||'';
+  document.getElementById('jFt').value=j.faultDescription;
+  document.getElementById('jSt').value=j.status;
+  document.getElementById('jPr').value=j.priority;
+  document.getElementById('jTN').value=j.technicianNotes||'';
+  document.getElementById('jEC').value=j.estimatedCost||'';
+  document.getElementById('jAC').value=j.actualCost||'';
+  document.getElementById('jDP').value=j.depositPaid||'';
+  document.getElementById('jDue').value=j.dueDate||'';
+  document.getElementById('jobMod').classList.add('on');
+}
+function updRepBadge(){
+  var active=ld(K.rep).filter(function(j){ return j.status!=='collected'&&j.status!=='cancelled'; }).length;
+  var b=document.getElementById('rep-badge');
+  b.textContent=active; b.style.display=active>0?'':'none';
+}
+
+// ── INVENTORY ──────────────────────────────────────────────
+function openNewInv(){
+  _editInvId=null;
+  document.getElementById('invModTitle').textContent='Add Stock Item';
+  ['ivNm','ivSK','ivNt','ivSup'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('ivQty').value='0';
+  document.getElementById('ivLS').value='5';
+  document.getElementById('ivCP').value='';
+  document.getElementById('ivSP').value='';
+  document.getElementById('ivCat').selectedIndex=0;
+  document.getElementById('invMod').classList.add('on');
+}
+async function saveInvItem(){
+  var nm=document.getElementById('ivNm').value.trim();
+  if(!nm){ await cdAlert('Please enter an item name.','⚠️'); return; }
+  var items=ld(K.inv);
+  var item={
+    id:_editInvId||Date.now(), name:nm, sku:document.getElementById('ivSK').value.trim(),
+    category:document.getElementById('ivCat').value, quantity:parseInt(document.getElementById('ivQty').value)||0,
+    lowStockThreshold:parseInt(document.getElementById('ivLS').value)||5,
+    costPrice:parseFloat(document.getElementById('ivCP').value)||0,
+    salePrice:parseFloat(document.getElementById('ivSP').value)||0,
+    supplier:document.getElementById('ivSup').value.trim(),
+    notes:document.getElementById('ivNt').value.trim()
+  };
+  if(_editInvId){ var idx=items.findIndex(function(x){ return x.id===_editInvId; }); if(idx>=0) items[idx]=item; }
+  else items.push(item);
+  sv(K.inv,items); closM('invMod'); ldInv(); toast(_editInvId?'Item updated!':'Item added!','ok');
+  logAct(_editInvId?'Inventory Updated':'Inventory Added',nm);
+}
+function ldInv(){
+  var q=(document.getElementById('invSearch')||{value:''}).value.toLowerCase();
+  var cf=(document.getElementById('invCatF')||{value:''}).value;
+  var items=ld(K.inv);
+  var lowCount=items.filter(function(x){ return x.quantity<=x.lowStockThreshold; }).length;
+  var alert=document.getElementById('invAlert');
+  alert.style.display=lowCount>0?'':'none';
+  if(q) items=items.filter(function(x){ return x.name.toLowerCase().includes(q)||(x.sku||'').toLowerCase().includes(q); });
+  if(cf) items=items.filter(function(x){ return x.category===cf; });
+  var el=document.getElementById('invL');
+  if(!items.length){ el.innerHTML='<div class="empty"><div class="eico">📦</div><p>No inventory items</p></div>'; return; }
+  var h='';
+  for(var i=0;i<items.length;i++){
+    var it=items[i];
+    var low=it.quantity<=it.lowStockThreshold;
+    var margin=it.salePrice>0&&it.costPrice>0?((it.salePrice-it.costPrice)/it.salePrice*100).toFixed(0):null;
+    h+='<div class="inv-card"><div class="inv-row">';
+    h+='<div>';
+    h+='<div class="inv-name">'+esc(it.name)+'</div>';
+    h+='<div class="inv-sku">'+(it.sku?it.sku+' · ':'')+esc(it.category)+(it.supplier?' · '+esc(it.supplier):'')+'</div>';
+    h+='</div>';
+    h+='<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">';
+    h+='<span class="status '+(low?'s-low':'s-ok')+'">'+it.quantity+' in stock</span>';
+    if(it.salePrice>0) h+='<div class="inv-price">R '+fmt(it.salePrice)+'</div>';
+    if(margin) h+='<span style="font-size:11px;color:var(--grn)">'+margin+'% margin</span>';
+    h+='<div style="display:flex;gap:6px">';
+    h+='<button class="btn bg" style="padding:5px 10px;font-size:11px" onclick="editInv('+it.id+')">Edit</button>';
+    h+='<button class="btn bamb" style="padding:5px 10px;font-size:11px" onclick="adjStock('+it.id+')">± Stock</button>';
+    h+='<button class="btn bd" style="padding:5px 10px;font-size:11px" onclick="delInv('+it.id+')">Del</button>';
+    h+='</div></div></div></div>';
+  }
+  el.innerHTML=h;
+}
+function filtInv(){ ldInv(); }
+function editInv(id){
+  var it=ld(K.inv).find(function(x){ return x.id===id; });
+  if(!it) return;
+  _editInvId=id;
+  document.getElementById('invModTitle').textContent='Edit — '+it.name;
+  document.getElementById('ivNm').value=it.name;
+  document.getElementById('ivSK').value=it.sku||'';
+  document.getElementById('ivCat').value=it.category;
+  document.getElementById('ivQty').value=it.quantity;
+  document.getElementById('ivLS').value=it.lowStockThreshold;
+  document.getElementById('ivCP').value=it.costPrice;
+  document.getElementById('ivSP').value=it.salePrice;
+  document.getElementById('ivSup').value=it.supplier||'';
+  document.getElementById('ivNt').value=it.notes||'';
+  document.getElementById('invMod').classList.add('on');
+}
+async function adjStock(id){
+  var val=await cdPrompt('Adjust stock quantity (use + or - e.g. +5 or -2 or just 10):','e.g. +5');
+  if(!val) return;
+  var items=ld(K.inv), it=items.find(function(x){ return x.id===id; });
+  if(!it) return;
+  var n=0;
+  if(val[0]==='+'||val[0]==='-') n=it.quantity+(parseInt(val)||0);
+  else n=parseInt(val)||it.quantity;
+  it.quantity=Math.max(0,n); sv(K.inv,items); ldInv();
+  toast('Stock updated: '+it.name+' → '+it.quantity,'ok');
+}
+async function delInv(id){
+  if(!(await cdConfirm('Delete this inventory item?','🗑️'))) return;
+  sv(K.inv,ld(K.inv).filter(function(x){ return x.id!==id; })); ldInv();
+}
+function updInvAlert(){ ldInv(); }
+
+// ── ANALYTICS ──────────────────────────────────────────────
+function ldAnalytics(){
+  var recs=ld(K.r);
+  var now=Date.now(), day=86400000, month30=30*day;
+  var thisMonth=recs.filter(function(r){ return Date.now()-new Date(r.date).getTime()<month30; });
+  var total=recs.reduce(function(s,r){ return s+(r.total||0); },0);
+  var totalMonth=thisMonth.reduce(function(s,r){ return s+(r.total||0); },0);
+  var paid=recs.filter(function(r){ return r.paymentStatus==='paid'; }).length;
+  var outstanding=recs.filter(function(r){ return r.paymentStatus!=='paid'; }).reduce(function(s,r){ return s+(r.total-(r.amountPaid||0)); },0);
+  var activeRep=ld(K.rep).filter(function(j){ return j.status!=='collected'&&j.status!=='cancelled'; }).length;
+
+  var today=new Date().toISOString().slice(0,10);
+  var todayRecs=recs.filter(function(r){return r.date&&r.date.slice(0,10)===today;}).length;
+  var invItems=ld(K.inv);
+  var lowStock=invItems.filter(function(x){return x.quantity<=x.lowStockThreshold;}).length;
+  var rgRecs=ld(RG_KEY);var pendingSync=Array.isArray(rgRecs)?rgRecs.filter(function(r){return !r.synced;}).length:0;
+
+  document.getElementById('anaStats').innerHTML=
+    '<div class="stat-card"><div class="stat-n">'+recs.length+'</div><div class="stat-l">Total Receipts</div></div>'+
+    '<div class="stat-card"><div class="stat-n" style="color:var(--grn)">R'+Math.round(total)+'</div><div class="stat-l">Total Revenue</div></div>'+
+    '<div class="stat-card"><div class="stat-n" style="color:var(--acc2)">R'+Math.round(totalMonth)+'</div><div class="stat-l">Last 30 Days</div></div>'+
+    '<div class="stat-card"><div class="stat-n" style="color:var(--amb)">'+paid+'/'+recs.length+'</div><div class="stat-l">Paid Receipts</div></div>'+
+    '<div class="stat-card"><div class="stat-n" style="color:var(--red)">R'+Math.round(outstanding)+'</div><div class="stat-l">Outstanding</div></div>'+
+    '<div class="stat-card"><div class="stat-n" style="color:var(--blu)">'+activeRep+'</div><div class="stat-l">Active Repairs</div></div>'+
+    '<div class="stat-card"><div class="stat-n" style="color:var(--grn)">'+todayRecs+'</div><div class="stat-l">Today\'s Receipts</div></div>'+
+    '<div class="stat-card"><div class="stat-n" style="color:var(--red)">'+lowStock+'</div><div class="stat-l">Low Stock Items</div></div>'+
+    '<div class="stat-card"><div class="stat-n" style="color:var(--amb)">'+pendingSync+'</div><div class="stat-l">Pending Sync</div></div>';
+
+  buildRevChart(recs); buildCatChart(recs); buildPayChart(recs); buildTopCu(recs);
+}
+
+function getChartColors(){
+  var dark=_th==='dark';
+  return {grid:dark?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)',
+    text:dark?'#9090b8':'#48487a',tick:dark?'#9090b8':'#48487a'};
+}
+function updateChartTheme(){
+  var c=getChartColors();
+  ['rev','cat','pay'].forEach(function(k){
+    if(!_charts[k]) return;
+    try{
+      if(_charts[k].options.scales&&_charts[k].options.scales.x){
+        _charts[k].options.scales.x.grid.color=c.grid;
+        _charts[k].options.scales.x.ticks.color=c.tick;
+        _charts[k].options.scales.y.grid.color=c.grid;
+        _charts[k].options.scales.y.ticks.color=c.tick;
+      }
+      _charts[k].options.plugins.legend.labels.color=c.text;
+      _charts[k].update();
+    }catch(e){}
+  });
+}
+function destroyChart(k){ if(_charts[k]){ try{_charts[k].destroy();}catch(e){} _charts[k]=null; } }
+
+function buildRevChart(recs){
+  destroyChart('rev');
+  var c=getChartColors();
+  var days=[], totals=[];
+  for(var i=29;i>=0;i--){
+    var d=new Date(); d.setDate(d.getDate()-i);
+    var ds=d.toISOString().slice(0,10);
+    days.push(d.toLocaleDateString('en-ZA',{day:'2-digit',month:'short'}));
+    var dayTotal=recs.filter(function(r){ return r.date&&r.date.slice(0,10)===ds; }).reduce(function(s,r){ return s+(r.total||0); },0);
+    totals.push(dayTotal.toFixed(2));
+  }
+  var ctx=document.getElementById('revChart').getContext('2d');
+  _charts.rev=new Chart(ctx,{type:'bar',data:{labels:days,datasets:[{label:'Revenue (R)',data:totals,
+    backgroundColor:'rgba(99,102,241,.5)',borderColor:'#6366f1',borderWidth:1,borderRadius:4}]},
+    options:{responsive:true,plugins:{legend:{labels:{color:c.text,font:{family:"'DM Sans',sans-serif",size:11}}}},
+      scales:{x:{grid:{color:c.grid},ticks:{color:c.tick,maxRotation:45,font:{size:10}}},
+        y:{grid:{color:c.grid},ticks:{color:c.tick,callback:function(v){return 'R'+v;},font:{size:10}}}}}});
+}
+function buildCatChart(recs){
+  destroyChart('cat');
+  var c=getChartColors();
+  var cats={};
+  recs.forEach(function(r){ (r.items||[]).forEach(function(it){
+    cats[it.category]=(cats[it.category]||0)+(it.total||0);
+  }); });
+  var labels=Object.keys(cats).sort(function(a,b){return cats[b]-cats[a];}).slice(0,8);
+  var vals=labels.map(function(k){ return cats[k].toFixed(2); });
+  var colors=['#6366f1','#10b981','#f59e0b','#3b82f6','#a855f7','#ef4444','#14b8a6','#f97316'];
+  var ctx=document.getElementById('catChart').getContext('2d');
+  _charts.cat=new Chart(ctx,{type:'doughnut',data:{labels:labels,datasets:[{data:vals,backgroundColor:colors,borderWidth:0}]},
+    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{color:c.text,font:{family:"'DM Sans',sans-serif",size:11},padding:10,boxWidth:12}}}}});
+}
+function buildPayChart(recs){
+  destroyChart('pay');
+  var c=getChartColors();
+  var paid=recs.filter(function(r){ return r.paymentStatus==='paid'; }).length;
+  var partial=recs.filter(function(r){ return r.paymentStatus==='partial'; }).length;
+  var unpaid=recs.filter(function(r){ return r.paymentStatus==='unpaid'||!r.paymentStatus; }).length;
+  var ctx=document.getElementById('payChart').getContext('2d');
+  _charts.pay=new Chart(ctx,{type:'pie',data:{labels:['Paid','Partial','Unpaid'],
+    datasets:[{data:[paid,partial,unpaid],backgroundColor:['#10b981','#f59e0b','#ef4444'],borderWidth:0}]},
+    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{color:c.text,font:{family:"'DM Sans',sans-serif",size:11},padding:10,boxWidth:12}}}}});
+}
+function buildTopCu(recs){
+  var cuMap={};
+  recs.forEach(function(r){ var k=r.customerPhone||'?'; cuMap[k]=(cuMap[k]||{name:r.customerName,total:0}); cuMap[k].total+=(r.total||0); cuMap[k].name=r.customerName; });
+  var sorted=Object.entries(cuMap).sort(function(a,b){ return b[1].total-a[1].total; }).slice(0,10);
+  var max=sorted.length?sorted[0][1].total:1;
+  var h='';
+  sorted.forEach(function(entry,i){
+    var pct=Math.round(entry[1].total/max*100);
+    h+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">';
+    h+='<span style="font-size:11px;color:var(--tx3);font-family:var(--mo);width:16px;text-align:right">'+(i+1)+'</span>';
+    h+='<div style="flex:1"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">';
+    h+='<span style="font-size:13px;font-weight:600">'+esc(entry[1].name||entry[0])+'</span>';
+    h+='<span style="font-size:12px;font-weight:700;color:var(--grn);font-family:var(--mo)">R'+Math.round(entry[1].total)+'</span></div>';
+    h+='<div style="height:4px;background:var(--card3);border-radius:2px"><div style="height:4px;background:var(--acc);border-radius:2px;width:'+pct+'%"></div></div></div></div>';
+  });
+  document.getElementById('topCuL').innerHTML=h||'<div class="empty" style="padding:20px"><p>No data yet</p></div>';
+}
+
+// ── CUSTOMERS ──────────────────────────────────────────────
+function ldCu(){ filtCu(); }
+function filtCu(){
+  var q=(document.getElementById('cSrch').value||'').toLowerCase();
+  var custs=ld(K.c).filter(function(c){ return !q||(c.name||'').toLowerCase().includes(q)||c.phone.includes(q); });
+  var el=document.getElementById('cuL');
+  if(!custs.length){ el.innerHTML='<div class="empty"><div class="eico">👤</div><p>No customers yet</p></div>'; return; }
+  custs.sort(function(a,b){ return (b.visits||0)-(a.visits||0); });
+  var h='';
+  for(var i=0;i<custs.length;i++){
+    var cu=custs[i];
+    var ph=encodeURIComponent(cu.phone), nm=encodeURIComponent(cu.name||''), em=encodeURIComponent(cu.email||'');
+    var waLink='https://wa.me/'+cu.phone.replace(/\D/g,'').replace(/^0/,'27');
+    h+='<div class="cc">';
+    h+='<div>';
+    h+='<div style="font-weight:700;font-size:14px">'+esc(cu.name||'Unknown')+'</div>';
+    h+='<div style="font-size:12px;color:var(--tx2);margin-top:2px">'+esc(cu.phone)+(cu.email?' · '+esc(cu.email):'')+'</div>';
+    h+='<div style="font-size:11px;color:var(--tx3);margin-top:2px">Last visit: '+(cu.lastVisit?new Date(cu.lastVisit).toLocaleDateString('en-ZA'):'Unknown')+'</div>';
+    h+='</div>';
+    h+='<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">';
+    h+='<span class="cvb">'+(cu.visits||1)+' visit(s)</span>';
+    h+='<div style="display:flex;gap:6px">';
+    h+='<a href="'+waLink+'" target="_blank" class="btn bs" style="padding:5px 10px;font-size:11px;text-decoration:none">💬 WA</a>';
+    h+='<button class="btn bp" style="padding:5px 10px;font-size:11px" onclick="newFor(\''+ph+'\',\''+nm+'\',\''+em+'\')">+ Receipt</button>';
+    h+='</div></div></div>';
+  }
+  el.innerHTML=h;
+}
+function newFor(ph, nm, em){
+  gto('nr', document.getElementById('t-nr'));
+  setTimeout(function(){
+    document.getElementById('cp').value=decodeURIComponent(ph);
+    document.getElementById('cn').value=decodeURIComponent(nm);
+    document.getElementById('ce').value=decodeURIComponent(em);
+  },60);
+}
+
+// ── SETTINGS ──────────────────────────────────────────────
+function unlk(){
+  if(document.getElementById('pI').value===cfg.password){
+    document.getElementById('sLk').style.display='none';
+    document.getElementById('sUl').style.display='block'; ldS();
+  } else {
+    cdAlert('Wrong password!\n\nForgot it? Contact Kgomotso: 060 160 3996','🔒');
+    document.getElementById('pI').focus();
+  }
+}
+function lkS(){
+  document.getElementById('sLk').style.display='block';
+  document.getElementById('sUl').style.display='none';
+  document.getElementById('pI').value='';
+}
+function ldS(){
+  document.getElementById('sN').value=cfg.companyName;
+  document.getElementById('sPh').value=cfg.phone;
+  document.getElementById('sEm').value=cfg.email;
+  document.getElementById('sAd').value=cfg.address;
+  document.getElementById('sW').value=cfg.warranty;
+  document.getElementById('sRole').value=getRole();
+  if(cfg.logo){ document.getElementById('lSt').textContent='Logo uploaded'; updL(); }
+  var sz=cfg.logoSize||52;
+  document.getElementById('logoSize').value=sz;
+  document.getElementById('logoSizeVal').textContent=sz+'px';
+  applyLogoSize(sz);
+  refreshPreview();
+  var recs=ld(K.r), custs=ld(K.c), reps=ld(K.rep), invs=ld(K.inv);
+  document.getElementById('tRc').textContent=recs.length;
+  document.getElementById('tCu').textContent=custs.length;
+  document.getElementById('tRep').textContent=reps.length;
+  document.getElementById('totR').textContent='R'+Math.round(recs.reduce(function(s,r){ return s+(r.total||0); },0));
+  document.getElementById('tInv').textContent=invs.length;
+  renderCatList();
+}
+async function savS(){
+  cfg.companyName=document.getElementById('sN').value||cfg.companyName;
+  cfg.phone=document.getElementById('sPh').value||cfg.phone;
+  cfg.email=document.getElementById('sEm').value||cfg.email;
+  cfg.address=document.getElementById('sAd').value||cfg.address;
+  cfg.warranty=document.getElementById('sW').value||cfg.warranty;
+  sv(K.s,cfg); applyBrand();
+  await saveSettingsToDB();
+  toast('Settings saved!','ok');
+  logAct('Settings Changed','Company settings updated');
+}
+async function chPwd(){
+  var cur=await cdPrompt('Enter current password:','Password');
+  if(!cur) return;
+  if(cur!==cfg.password){ await cdAlert('Wrong password!','❌'); return; }
+  var np=await cdPrompt('New password (min 6 chars):','New password');
+  if(!np||np.length<6){ await cdAlert('Password too short!','⚠️'); return; }
+  cfg.password=np; sv(K.s,cfg); toast('Password changed!','ok');
+}
+function upLogo(e){
+  var file=e.target.files[0]; if(!file) return;
+  if(file.size>5000000){ cdAlert('Max 5MB!','⚠️'); return; }
+  var reader=new FileReader();
+  reader.onload=function(ev){ cfg.logo=ev.target.result; updL(); document.getElementById('lSt').textContent=file.name; toast('Logo uploaded! Click Save Settings.'); };
+  reader.readAsDataURL(file);
+}
+function updL(){
+  var im=document.getElementById('lIm'), pv=document.getElementById('lPv');
+  if(cfg.logo){ im.src=cfg.logo; pv.style.display='block'; } else pv.style.display='none';
+}
+function rmLogo(){
+  cdConfirm('Remove logo?','🖼️').then(function(ok){ if(!ok) return; cfg.logo=''; updL(); document.getElementById('lSt').textContent='No logo'; document.getElementById('lIn').value=''; });
+}
+
+// ── EXPORT / IMPORT ──────────────────────────────────────────
+function expDB(){
+  if(!isAdmin()){cdAlert('Export is restricted to administrators.','🔒');return;}
+  try{
+    var data={receipts:ld(K.r),customers:ld(K.c),settings:Object.assign({},cfg,{password:undefined}),
+      repairJobs:ld(K.rep),inventory:ld(K.inv),generatedReceipts:ld(RG_KEY),activityLog:ld(AL_KEY),exportDate:new Date().toISOString(),version:2};
+    var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}), url=URL.createObjectURL(blob), a=document.createElement('a');
+    a.href=url; a.download='ShopBackup_v2_'+new Date().toISOString().slice(0,10)+'.json'; a.click(); URL.revokeObjectURL(url);
+    toast('Exported: '+data.receipts.length+' receipts, '+data.repairJobs.length+' jobs, '+data.inventory.length+' stock items');
+  }catch(e){ cdAlert('Export failed: '+e.message,'❌'); }
+}
+async function impDB(e){
+  var file=e.target.files[0]; if(!file) return;
+  var reader=new FileReader();
+  reader.onload=async function(ev){
+    try{
+      var d=JSON.parse(ev.target.result);
+      var ok=await cdConfirm('Import backup?\n'+((d.receipts||[]).length)+' receipts, '+((d.repairJobs||[]).length)+' repair jobs, '+((d.inventory||[]).length)+' stock items.\nThis REPLACES all current local data!','📥');
+      if(!ok) return;
+      if(d.receipts)  sv(K.r,d.receipts);
+      if(d.customers) sv(K.c,d.customers);
+      if(d.repairJobs) sv(K.rep,d.repairJobs);
+      if(d.inventory) sv(K.inv,d.inventory);
+      if(d.generatedReceipts) sv(RG_KEY,d.generatedReceipts);
+      if(d.activityLog) sv(AL_KEY,d.activityLog);
+      if(d.settings)  { cfg=Object.assign({},cfg,d.settings); sv(K.s,cfg); }
+      toast('Imported successfully!','ok');
+      if(CU) pushAll(); else setTimeout(function(){ location.reload(); },1200);
+    }catch(e){ cdAlert('Import failed: '+e.message,'❌'); }
+  };
+  reader.readAsText(file); e.target.value='';
+}
+
+// ── EVENT LISTENERS ──────────────────────────────────────────
+document.getElementById('dp').addEventListener('input',function(){
+  var p=parseFloat(this.value), price=parseFloat(document.getElementById('ip').value), q=parseInt(document.getElementById('iq').value)||1;
+  if(p>0&&price>0){ var o=price*q, disc=o*(1-p/100); document.getElementById('dpv').textContent='R'+fmt(o)+' → R'+fmt(disc)+' (-R'+fmt(o-disc)+')'; }
+  else document.getElementById('dpv').textContent='';
+});
+document.getElementById('ip').addEventListener('keyup',function(e){ if(e.key==='Enter') addIt(); });
+document.getElementById('rPS').addEventListener('change',function(){
+  var wrap=document.getElementById('amtPaidWrap');
+  wrap.style.opacity=this.value==='paid'?'0.4':'1';
+  if(this.value==='paid') document.getElementById('rAP').value='';
+});
+document.getElementById('rMod').addEventListener('click',function(e){ if(e.target===this) closM('rMod'); });
+document.getElementById('jobMod').addEventListener('click',function(e){ if(e.target===this) closM('jobMod'); });
+document.getElementById('invMod').addEventListener('click',function(e){ if(e.target===this) closM('invMod'); });
+document.getElementById('rgMod').addEventListener('click',function(e){ if(e.target===this) closM('rgMod'); });
+document.getElementById('am').addEventListener('click',function(e){ if(e.target===this) asGuest(); });
+document.addEventListener('keyup',function(e){ if(e.key==='Escape'){ ['rMod','jobMod','invMod','rgMod'].forEach(function(id){ closM(id); }); } });
+
+// ── PIN GATE ──────────────────────────────────────────────
+function checkPin(){
+  var val=document.getElementById('pinInput').value.trim();
+  if(val==='060160'){
+    sessionStorage.setItem('km_pin','1');
+    document.getElementById('pinGate').classList.add('hidden');
+    document.getElementById('pinErr').style.display='none';
+  } else {
+    document.getElementById('pinErr').style.display='block';
+    document.getElementById('pinInput').value='';
+    document.getElementById('pinInput').focus();
+  }
+}
+
+// ── PAGE LOAD ──────────────────────────────────────────────
+window.addEventListener('load', async function(){
+  cfg=loadCfg();
+  applyBrand();
+  populateCatSelects();
+  ldAll(); updRepBadge();
+  if(!sb){
+    setBanner(null);
+    if(!sessionStorage.getItem('km_guest')) openAuth();
+    return;
+  }
+  try{
+    var ses=await sb.auth.getSession();
+    if(ses.data&&ses.data.session&&ses.data.session.user){
+      setBanner(ses.data.session.user);
+      await loadSettingsFromDB();
+      await syncDown();
+    } else {
+      setBanner(null);
+      if(!sessionStorage.getItem('km_guest')) openAuth();
+    }
+  } catch(e){
+    console.warn('Auth check failed:',e);
+    setBanner(null);
+    if(!sessionStorage.getItem('km_guest')) openAuth();
+  }
+});
+
+// ── LOGO SIZE ────────────────────────────────────────────────
+function applyLogoSize(sz){
+  sz=parseInt(sz)||52;
+  var el=document.getElementById('hdrLogo');
+  if(el){el.style.width=sz+'px';el.style.height=sz+'px';}
+  var lbl=document.getElementById('logoSizeVal');
+  if(lbl)lbl.textContent=sz+'px';
+  cfg.logoSize=sz;
+}
+
+// ── SETTINGS PREVIEW ─────────────────────────────────────────
+function refreshPreview(){
+  var n=document.getElementById('sN').value||cfg.companyName;
+  var ph=document.getElementById('sPh').value||cfg.phone;
+  var em=document.getElementById('sEm').value||cfg.email;
+  var ad=document.getElementById('sAd').value||cfg.address;
+  var w=document.getElementById('sW').value||cfg.warranty;
+  var logo=cfg.logo||'/logo.png';
+  var h='<div style="display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:10px">';
+  h+='<img src="'+logo+'" style="max-height:50px;max-width:80px;object-fit:contain;border-radius:6px">';
+  h+='<div style="text-align:left"><div style="font-size:15px;font-weight:800">'+esc(n).toUpperCase()+'</div>';
+  h+='<div style="font-size:10px;color:#555">Tel: '+esc(ph)+' · '+esc(em)+'</div>';
+  h+='<div style="font-size:10px;color:#555">'+esc(ad)+'</div></div></div>';
+  h+='<div style="background:#111;color:#fff;padding:6px;font-size:10px;font-weight:700;letter-spacing:3px;border-radius:4px;margin-bottom:8px">OFFICIAL SALES RECEIPT</div>';
+  h+='<div style="font-size:9px;color:#999;font-style:italic;border-top:1px dashed #ccc;padding-top:6px;margin-top:8px">'+esc(w)+'</div>';
+  h+='<div style="font-size:8px;color:#bbb;margin-top:6px">Developer: Kgomotso Thabo | 060 160 3996</div>';
+  document.getElementById('settingsPreview').innerHTML=h;
+}
+
+// ── ROLES & PERMISSIONS ──────────────────────────────────────
+var ROLE_KEY='km_role';
+function getRole(){return localStorage.getItem(ROLE_KEY)||'admin';}
+function setRole(r){localStorage.setItem(ROLE_KEY,r);}
+function isAdmin(){return getRole()==='admin';}
+function canPrint(){return isAdmin();}
+function canDelete(){return isAdmin();}
+function canSettings(){return isAdmin();}
+function checkPrint(){
+  if(!canPrint()){cdAlert('Printing is restricted to administrators.','🔒');return false;}
+  return true;
+}
+
+// ── ACTIVITY LOG ────────────────────────────────────────────
+var AL_KEY='km_actlog';
+function logAct(action,detail){
+  var logs=ld(AL_KEY);if(!Array.isArray(logs))logs=[];
+  logs.unshift({action:action,detail:detail||'',user:CU?CU.email:(cfg.companyName||'Admin'),
+    date:new Date().toISOString(),device:(/Mobile|Android|iPhone/i.test(navigator.userAgent)?'Mobile':'Desktop')});
+  if(logs.length>500)logs=logs.slice(0,500);
+  sv(AL_KEY,logs);
+}
+function ldActLog(){
+  var logs=ld(AL_KEY);if(!Array.isArray(logs))logs=[];
+  var el=document.getElementById('actLogList');if(!el)return;
+  if(!logs.length){el.innerHTML='<div class="empty"><div class="eico">📋</div><p>No activity yet</p></div>';return;}
+  var h='';
+  logs.slice(0,100).forEach(function(l){
+    var d=new Date(l.date);
+    h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd2);gap:8px;flex-wrap:wrap">';
+    h+='<div><span style="font-weight:600;font-size:13px">'+esc(l.action)+'</span>';
+    if(l.detail)h+=' <span style="color:var(--tx2);font-size:12px">— '+esc(l.detail)+'</span>';
+    h+='</div><div style="text-align:right;font-size:11px;color:var(--tx3)">';
+    h+='<div>'+d.toLocaleDateString('en-ZA')+' '+d.toLocaleTimeString()+' </div>';
+    h+='<div>'+esc(l.user)+' · '+esc(l.device)+'</div></div></div>';
+  });
+  el.innerHTML=h;
+}
+
+// ── RECEIPT GENERATOR ─────────────────────────────────────────
+var RG_KEY='km_rg';
+var _rgItems=[];
+var _rgCust={name:'',phone:'',email:''};
+var _rgStep=1;
+
+function rgUnlock(){
+  var email=document.getElementById('rgEmail').value.trim();
+  var pwd=document.getElementById('rgPwd').value;
+  var btn=document.getElementById('rgUnlockBtn');
+  var msg=document.getElementById('rgAuthMsg');
+  msg.style.display='none';
+  // Try server auth first, fallback to local
+  if(email&&pwd){
+    btn.textContent='Verifying...';btn.disabled=true;
+    fetch('/api/shop-auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pwd})})
+    .then(function(r){return r.json().then(function(d){return{ok:r.ok,data:d};});})
+    .then(function(res){
+      btn.textContent='Unlock Receipt Generator';btn.disabled=false;
+      if(res.ok){
+        sessionStorage.setItem('rg_auth','1');
+        document.getElementById('rgLock').style.display='none';
+        document.getElementById('rgContent').style.display='block';
+        rgUpdateDash();rgLoadHistory();toast('Access granted!','ok');
+      } else {
+        msg.textContent=res.data.error||'Invalid credentials';msg.style.display='block';
+      }
+    }).catch(function(){
+      btn.textContent='Unlock Receipt Generator';btn.disabled=false;
+      // Offline fallback to local password
+      if(pwd===cfg.password){
+        sessionStorage.setItem('rg_auth','1');
+        document.getElementById('rgLock').style.display='none';
+        document.getElementById('rgContent').style.display='block';
+        rgUpdateDash();rgLoadHistory();toast('Access granted (offline mode)!','ok');
+      } else {msg.textContent='Offline: wrong local password';msg.style.display='block';}
+    });
+  } else if(pwd===cfg.password){
+    // Local-only fallback when no email provided
+    sessionStorage.setItem('rg_auth','1');
+    document.getElementById('rgLock').style.display='none';
+    document.getElementById('rgContent').style.display='block';
+    rgUpdateDash();rgLoadHistory();
+  } else {msg.textContent='Enter email and password';msg.style.display='block';}
+}
+function rgTab(t){
+  document.querySelectorAll('#rgContent .rg-panel').forEach(function(x){x.classList.remove('on');});
+  document.getElementById('rg'+t.charAt(0).toUpperCase()+t.slice(1)).classList.add('on');
+  document.querySelectorAll('.rg-tab').forEach(function(b){b.classList.remove('on');});
+  event.target.classList.add('on');
+  if(t==='history')rgLoadHistory();
+  if(t==='sync')rgShowSync();
+}
+function rgNextStep(n){
+  _rgStep=n;
+  for(var i=1;i<=3;i++){
+    document.getElementById('rgStep'+i).classList.remove('on');
+    var s=document.getElementById('rgS'+i);
+    s.className='rg-step'+(i===n?' active':i<n?' done':'');
+  }
+  document.getElementById('rgStep'+n).classList.add('on');
+  if(n===2&&!_rgCust.phone){
+    var p=document.getElementById('rgCPhone').value.trim();
+    var nm=document.getElementById('rgCName').value.trim();
+    var em=document.getElementById('rgCEmail').value.trim();
+    if(!p||p.length<10){cdAlert('Please enter a valid phone number.','📞');_rgStep=1;document.getElementById('rgStep1').classList.add('on');document.getElementById('rgS1').className='rg-step active';return;}
+    _rgCust={name:nm||'Walk-in Customer',phone:p,email:em};
+  }
+  if(n===3)rgBuildReview();
+}
+function rgFilterCust(){
+  var q=document.getElementById('rgCustSearch').value.toLowerCase();
+  var custs=ld(K.c).filter(function(c){return !q||(c.name||'').toLowerCase().includes(q)||c.phone.includes(q);});
+  var el=document.getElementById('rgCustList');
+  if(!custs.length){el.innerHTML='<p style="font-size:12px;color:var(--tx3)">No customers found</p>';return;}
+  var h='';
+  custs.slice(0,8).forEach(function(c){
+    h+='<div class="rg-cust-card" onclick="rgSelectCust(\''+esc(c.phone)+'\',\''+esc(c.name||'')+'\',\''+esc(c.email||'')+'\')">';
+    h+='<div style="font-weight:600">'+esc(c.name||'Unknown')+'</div>';
+    h+='<div style="font-size:12px;color:var(--tx2)">'+esc(c.phone)+(c.email?' · '+esc(c.email):'')+'</div>';
+    h+='<div style="font-size:11px;color:var(--tx3)">'+(c.visits||1)+' visit(s)</div></div>';
+  });
+  el.innerHTML=h;
+}
+function rgSelectCust(ph,nm,em){
+  _rgCust={name:nm||'Walk-in Customer',phone:ph,email:em};
+  document.getElementById('rgCName').value=nm;
+  document.getElementById('rgCPhone').value=ph;
+  document.getElementById('rgCEmail').value=em;
+  document.querySelectorAll('.rg-cust-card').forEach(function(x){x.classList.remove('selected');});
+  event.currentTarget.classList.add('selected');
+  toast('Customer selected: '+nm,'ok');
+}
+function rgAddItem(){
+  var d=document.getElementById('rgIDesc').value.trim();
+  var q=parseInt(document.getElementById('rgIQty').value)||1;
+  var p=parseFloat(document.getElementById('rgIPrice').value)||0;
+  if(!d){cdAlert('Enter item description.','⚠️');return;}
+  if(p<=0){cdAlert('Enter a valid price.','⚠️');return;}
+  _rgItems.push({id:Date.now(),description:d,quantity:q,unitPrice:p,total:q*p});
+  document.getElementById('rgIDesc').value='';document.getElementById('rgIQty').value='1';document.getElementById('rgIPrice').value='';
+  rgRenderItems();
+}
+function rgRemoveItem(id){_rgItems=_rgItems.filter(function(x){return x.id!==id;});rgRenderItems();}
+function rgRenderItems(){
+  var el=document.getElementById('rgItemsList');
+  if(!_rgItems.length){el.innerHTML='<p style="font-size:12px;color:var(--tx3)">No items added yet</p>';return;}
+  var h='<div class="tsc"><table><thead><tr><th>Description</th><th>Qty</th><th>Unit Price</th><th>Total</th><th></th></tr></thead><tbody>';
+  _rgItems.forEach(function(it){
+    h+='<tr><td>'+esc(it.description)+'</td><td>'+it.quantity+'</td><td>R '+fmt(it.unitPrice)+'</td><td style="font-weight:700">R '+fmt(it.total)+'</td>';
+    h+='<td><button class="btn bd" style="padding:3px 7px;font-size:11px" onclick="rgRemoveItem('+it.id+')">×</button></td></tr>';
+  });
+  h+='</tbody></table></div>';
+  var tot=_rgItems.reduce(function(s,i){return s+i.total;},0);
+  h+='<div style="text-align:right;margin-top:8px;font-weight:700;font-family:var(--mo);color:var(--grn)">Subtotal: R '+fmt(tot)+'</div>';
+  el.innerHTML=h;
+}
+function rgBuildReview(){
+  var sub=_rgItems.reduce(function(s,i){return s+i.total;},0);
+  var disc=parseFloat(document.getElementById('rgDiscount').value)||0;
+  var final=disc>0?sub*(1-disc/100):sub;
+  var h='<div style="font-weight:700;margin-bottom:8px">Customer: '+esc(_rgCust.name)+' ('+esc(_rgCust.phone)+')</div>';
+  h+='<div style="font-size:12px;color:var(--tx2);margin-bottom:8px">Items: '+_rgItems.length+' | Subtotal: R '+fmt(sub)+(disc>0?' | Discount: '+disc+'%':'')+'</div>';
+  h+='<div style="font-size:18px;font-weight:800;color:var(--grn);font-family:var(--mo)">Final Total: R '+fmt(final)+'</div>';
+  document.getElementById('rgReviewSummary').innerHTML=h;
+}
+function rgGenCode(){
+  var ch='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s='';
+  for(var i=0;i<6;i++)s+=ch[Math.floor(Math.random()*ch.length)];
+  return 'RG-'+new Date().getFullYear()+'-'+s;
+}
+async function rgGenerate(){
+  if(!_rgItems.length){await cdAlert('Please add at least one item.','⚠️');return;}
+  var sub=_rgItems.reduce(function(s,i){return s+i.total;},0);
+  var disc=parseFloat(document.getElementById('rgDiscount').value)||0;
+  var final=disc>0?sub*(1-disc/100):sub;
+  var ps=document.getElementById('rgPayStatus').value;
+  var rec={
+    id:Date.now(),receiptNumber:rgGenCode(),
+    customerName:_rgCust.name,customerPhone:_rgCust.phone,customerEmail:_rgCust.email,
+    date:new Date().toISOString(),items:_rgItems.slice(),
+    subtotal:sub,discount:disc,total:final,
+    notes:document.getElementById('rgNotes').value.trim(),
+    technician:document.getElementById('rgTech').value.trim(),
+    paymentStatus:ps,synced:false
+  };
+  var rgs=ld(RG_KEY);if(!Array.isArray(rgs))rgs=[];
+  rgs.push(rec);sv(RG_KEY,rgs);
+  // Also add customer to main customer list
+  var custs=ld(K.c),ex=custs.find(function(c){return c.phone===_rgCust.phone;});
+  if(!ex)custs.push({phone:_rgCust.phone,name:_rgCust.name,email:_rgCust.email,firstVisit:rec.date,lastVisit:rec.date,visits:1});
+  else{ex.lastVisit=rec.date;ex.visits=(ex.visits||0)+1;}
+  sv(K.c,custs);
+  toast('Receipt '+rec.receiptNumber+' generated!','ok');
+  rgUpdateDash();
+  // Reset
+  _rgItems=[];_rgCust={name:'',phone:'',email:''};_rgStep=1;
+  ['rgCName','rgCPhone','rgCEmail','rgIDesc','rgIPrice','rgNotes','rgTech'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('rgIQty').value='1';document.getElementById('rgDiscount').value='0';
+  document.getElementById('rgPayStatus').value='unpaid';
+  rgRenderItems();rgNextStep(1);
+  var prnt=await cdConfirm('Print this receipt now?','🖨️');
+  if(prnt)rgPrintReceipt(rec);
+}
+function rgUpdateDash(){
+  var rgs=ld(RG_KEY);if(!Array.isArray(rgs))rgs=[];
+  var today=new Date().toISOString().slice(0,10);
+  var todayRecs=rgs.filter(function(r){return r.date&&r.date.slice(0,10)===today;});
+  var pending=rgs.filter(function(r){return !r.synced;});
+  var rev=rgs.reduce(function(s,r){return s+(r.total||0);},0);
+  document.getElementById('rgStatTotal').textContent=rgs.length;
+  document.getElementById('rgStatToday').textContent=todayRecs.length;
+  document.getElementById('rgStatPending').textContent=pending.length;
+  document.getElementById('rgStatRevenue').textContent='R'+Math.round(rev);
+}
+function rgLoadHistory(){
+  var rgs=ld(RG_KEY);if(!Array.isArray(rgs))rgs=[];
+  rgRenderList(rgs.slice().reverse(),document.getElementById('rgHistoryList'));
+}
+function rgDoSearch(){
+  var q=document.getElementById('rgSearchInput').value.trim().toLowerCase();
+  var rgs=ld(RG_KEY);if(!Array.isArray(rgs))rgs=[];
+  if(q)rgs=rgs.filter(function(r){
+    return r.receiptNumber.toLowerCase().includes(q)||(r.customerName||'').toLowerCase().includes(q)||
+      (r.customerPhone||'').includes(q)||(r.customerEmail||'').toLowerCase().includes(q)||
+      (r.date||'').slice(0,10).includes(q);
+  });
+  rgRenderList(rgs.slice().reverse(),document.getElementById('rgSearchResults'));
+}
+function rgRenderList(rgs,el){
+  if(!rgs.length){el.innerHTML='<div class="empty"><div class="eico">📋</div><p>No receipts found</p></div>';return;}
+  var h='';
+  rgs.forEach(function(r){
+    var ps=r.paymentStatus||'unpaid';
+    var syncCls=r.synced?'rg-synced':'rg-pending';
+    var syncTxt=r.synced?'🟢 Synced':'🟡 Pending';
+    h+='<div class="rc" onclick="rgViewReceipt('+r.id+')">';
+    h+='<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">';
+    h+='<div><div class="rc-code">'+esc(r.receiptNumber)+'</div>';
+    h+='<div class="rc-name">'+esc(r.customerName)+'</div>';
+    h+='<div class="rc-sub">'+esc(r.customerPhone)+' · '+new Date(r.date).toLocaleDateString('en-ZA')+'</div></div>';
+    h+='<div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:5px">';
+    h+='<div class="rc-amt">R '+fmt(r.total)+'</div>';
+    h+='<span class="status s-'+ps+'">'+ps+'</span>';
+    h+='<span class="rg-sync-badge '+syncCls+'">'+syncTxt+'</span>';
+    h+='</div></div></div>';
+  });
+  el.innerHTML=h;
+}
+function rgViewReceipt(id){
+  var rgs=ld(RG_KEY);if(!Array.isArray(rgs))rgs=[];
+  var rec=rgs.find(function(r){return r.id===id;});
+  if(!rec)return;
+  var ps=rec.paymentStatus||'unpaid';
+  var rows='';
+  (rec.items||[]).forEach(function(it){
+    rows+='<tr><td>'+esc(it.description)+'</td><td>'+it.quantity+'</td><td>R '+fmt(it.unitPrice)+'</td><td style="font-weight:700">R '+fmt(it.total)+'</td></tr>';
+  });
+  var h='<div class="rco">';
+  h+='<img src="'+(cfg.logo||'/logo.png')+'" style="max-height:50px;margin-bottom:6px;border-radius:6px"><br>';
+  h+='<h2>'+esc(cfg.companyName)+'</h2><p>'+esc(cfg.phone)+' · '+esc(cfg.email)+'</p><p>'+esc(cfg.address)+'</p></div>';
+  h+='<div class="rig">';
+  h+='<div><div class="ril">Receipt #</div><div class="ricode">'+esc(rec.receiptNumber)+'</div></div>';
+  h+='<div><div class="ril">Date</div><div class="riv">'+new Date(rec.date).toLocaleString()+'</div></div>';
+  h+='<div><div class="ril">Customer</div><div class="riv">'+esc(rec.customerName)+'</div></div>';
+  h+='<div><div class="ril">Phone</div><div class="riv">'+esc(rec.customerPhone)+'</div></div>';
+  h+='<div><div class="ril">Payment</div><div class="riv"><span class="status s-'+ps+'">'+ps+'</span></div></div>';
+  h+='<div><div class="ril">Technician</div><div class="riv">'+esc(rec.technician||'N/A')+'</div></div>';
+  h+='</div>';
+  h+='<div class="tsc"><table><thead><tr><th>Description</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  if(rec.discount>0)h+='<div style="text-align:right;font-size:12px;color:var(--tx2);margin-top:4px">Discount: '+rec.discount+'%</div>';
+  h+='<div class="rtot"><div class="rtl">FINAL TOTAL</div><div class="rta">R '+fmt(rec.total)+'</div></div>';
+  if(rec.notes)h+='<div style="background:var(--card2);padding:10px 12px;border-radius:var(--r);margin-top:10px;font-size:12px;color:var(--tx2);border:1px solid var(--bd)">📝 '+esc(rec.notes)+'</div>';
+  // QR Code (text-based representation)
+  h+='<div style="text-align:center;margin-top:12px"><div class="rg-qr" id="rgQrBox"><canvas id="rgQrCanvas"></canvas></div></div>';
+  h+='<div style="text-align:center;margin-top:10px;font-size:11px;color:var(--tx3);font-style:italic;border-top:1px solid var(--bd);padding-top:10px">'+esc(cfg.warranty)+'<br>Developer: Kgomotso Thabo</div>';
+  // Actions
+  h+='<div class="arow" style="margin-top:14px">';
+  h+='<button class="btn bp" onclick="rgPrintById('+rec.id+')" style="flex:1">🖨️ Print</button>';
+  h+='<button class="btn bamb" onclick="rgEditReceipt('+rec.id+')" style="flex:1">✏️ Edit</button>';
+  h+='<button class="btn bd" onclick="rgDeleteReceipt('+rec.id+')" style="flex:1">🗑️ Delete</button>';
+  h+='<button class="btn bg" onclick="closM(\'rgMod\')" style="flex:1">Close</button></div>';
+  document.getElementById('rgModBody').innerHTML=h;
+  document.getElementById('rgMod').classList.add('on');
+  // Draw QR
+  setTimeout(function(){rgDrawQR(rec);},50);
+}
+function rgDrawQR(rec){
+  var canvas=document.getElementById('rgQrCanvas');if(!canvas)return;
+  var data=rec.receiptNumber+'|'+rec.customerName+'|'+new Date(rec.date).toLocaleDateString('en-ZA')+'|R'+fmt(rec.total)+'|'+rec.paymentStatus;
+  // Simple QR-like visual (actual QR generation via canvas pattern)
+  var ctx=canvas.getContext('2d');var size=100;canvas.width=size;canvas.height=size;
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,size,size);ctx.fillStyle='#000';
+  // Generate deterministic pattern from data
+  var hash=0;for(var i=0;i<data.length;i++){hash=((hash<<5)-hash)+data.charCodeAt(i);hash|=0;}
+  for(var y=0;y<10;y++)for(var x=0;x<10;x++){
+    var seed=(hash*(y*10+x+1))&0xFFFF;
+    if(seed%3!==0)ctx.fillRect(x*10,y*10,9,9);
+  }
+  // Corner markers
+  ctx.fillStyle='#000';ctx.fillRect(0,0,30,30);ctx.fillStyle='#fff';ctx.fillRect(3,3,24,24);ctx.fillStyle='#000';ctx.fillRect(7,7,16,16);
+  ctx.fillStyle='#000';ctx.fillRect(70,0,30,30);ctx.fillStyle='#fff';ctx.fillRect(73,3,24,24);ctx.fillStyle='#000';ctx.fillRect(77,7,16,16);
+  ctx.fillStyle='#000';ctx.fillRect(0,70,30,30);ctx.fillStyle='#fff';ctx.fillRect(3,73,24,24);ctx.fillStyle='#000';ctx.fillRect(7,77,16,16);
+}
+function rgPrintById(id){
+  var rgs=ld(RG_KEY);if(!Array.isArray(rgs))rgs=[];
+  var rec=rgs.find(function(r){return r.id===id;});
+  if(rec)rgPrintReceipt(rec);
+}
+function rgPrintReceipt(rec){
+  if(!checkPrint()) return;
+  var rows='';
+  (rec.items||[]).forEach(function(it){
+    rows+='<tr><td>'+esc(it.description)+'</td><td style="text-align:center">'+it.quantity+'</td><td>R '+fmt(it.unitPrice)+'</td><td><strong>R '+fmt(it.total)+'</strong></td></tr>';
+  });
+  var ps=rec.paymentStatus||'unpaid';
+  var psColor=ps==='paid'?'#10b981':ps==='partial'?'#f59e0b':'#ef4444';
+  var logo='<div style="text-align:center;margin-bottom:15px"><img src="'+(cfg.logo||'/logo.png')+'" style="max-width:280px;width:100%;height:auto;display:block;margin:0 auto;object-fit:contain;border-radius:6px"></div>';
+  var d='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Receipt '+rec.receiptNumber+'</title>';
+  d+='<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;background:#fff;color:#111;padding:26px;max-width:760px;margin:0 auto;font-size:14px}';
+  d+='.wm{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-38deg);font-size:80pt;font-weight:900;color:rgba(0,0,0,.03);pointer-events:none;white-space:nowrap}';
+  d+='.hdr{display:flex;align-items:flex-start;gap:18px;padding-bottom:14px;border-bottom:2.5px solid #111;margin-bottom:16px}';
+  d+='.rtitle{background:#111;color:#fff;text-align:center;padding:8px;font-size:11pt;font-weight:700;letter-spacing:5px;margin:0 0 14px}';
+  d+='.ibox{background:#f8f8f8;border:1px solid #ddd;border-radius:6px;padding:12px;margin:0 0 14px;display:flex;gap:18px;flex-wrap:wrap}';
+  d+='.icol{flex:1;min-width:160px}.lbl{font-weight:700;font-size:8pt;color:#666;display:inline-block;width:80px}.val{font-size:9pt}';
+  d+='.ps-badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:8pt;font-weight:700;background:'+psColor+'20;color:'+psColor+'}';
+  d+='table{width:100%;border-collapse:collapse;margin-bottom:12px}thead tr{background:#111;color:#fff}th{padding:7px;text-align:left;font-size:8pt;font-weight:700}';
+  d+='td{padding:7px;font-size:9pt;border-bottom:1px solid #e8e8e8}';
+  d+='.tbox{background:#111;color:#fff;padding:12px 16px;border-radius:5px;text-align:right;margin-bottom:12px}';
+  d+='.tbox-l{font-size:9pt;opacity:.7}.tbox-a{font-size:18pt;font-weight:700}';
+  d+='@media print{.noprint{display:none!important}}</style></head><body>';
+  d+='<div class="wm">'+esc(rec.receiptNumber)+'</div>';
+  d+='<div class="hdr" style="flex-direction:column;align-items:center;text-align:center">'+logo+'<div><div style="font-size:17pt;font-weight:700">'+esc(cfg.companyName).toUpperCase()+'</div>';
+  d+='<div style="font-size:9pt;color:#555">Tel: '+esc(cfg.phone)+'</div>';
+  d+='<div style="font-size:9pt;color:#555">Email: '+esc(cfg.email)+'</div>';
+  d+='<div style="font-size:9pt;color:#555">'+esc(cfg.address)+'</div></div></div>';
+  d+='<div class="rtitle">GENERATED RECEIPT</div>';
+  d+='<div class="ibox"><div class="icol">';
+  d+='<div><span class="lbl">Receipt #:</span><span class="val" style="font-weight:700;color:#1e40af">'+esc(rec.receiptNumber)+'</span></div>';
+  d+='<div><span class="lbl">Date:</span><span class="val">'+new Date(rec.date).toLocaleDateString('en-ZA')+'</span></div>';
+  d+='<div><span class="lbl">Time:</span><span class="val">'+new Date(rec.date).toLocaleTimeString()+'</span></div>';
+  d+='<div><span class="lbl">Payment:</span><span class="ps-badge">'+ps+'</span></div>';
+  d+='</div><div class="icol">';
+  d+='<div><span class="lbl">Customer:</span><span class="val">'+esc(rec.customerName)+'</span></div>';
+  d+='<div><span class="lbl">Phone:</span><span class="val">'+esc(rec.customerPhone)+'</span></div>';
+  if(rec.customerEmail)d+='<div><span class="lbl">Email:</span><span class="val">'+esc(rec.customerEmail)+'</span></div>';
+  if(rec.technician)d+='<div><span class="lbl">Technician:</span><span class="val">'+esc(rec.technician)+'</span></div>';
+  d+='</div></div>';
+  d+='<table><thead><tr><th>Description</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  if(rec.discount>0)d+='<div style="text-align:right;font-size:9pt;margin-bottom:6px">Discount: '+rec.discount+'%</div>';
+  d+='<div class="tbox"><div class="tbox-l">FINAL TOTAL</div><div class="tbox-a">R '+fmt(rec.total)+'</div></div>';
+  if(rec.notes)d+='<div style="border:1px solid #ddd;padding:10px;border-radius:6px;font-size:9pt;margin-bottom:10px"><strong>Notes:</strong> '+esc(rec.notes)+'</div>';
+  d+='<div style="text-align:center;font-size:8pt;color:#999;font-style:italic;padding:8px 0;border-top:1px dashed #ccc;border-bottom:1px dashed #ccc;margin-bottom:12px">'+esc(cfg.warranty)+'</div>';
+  d+='<div style="text-align:center;font-size:8pt;color:#bbb;margin-top:12px">Developer: Kgomotso Thabo | 060 160 3996 | kgomotsothabo2004@gmail.com</div>';
+  d+='<div class="noprint" style="text-align:center;margin-top:20px"><button onclick="window.print()" style="padding:12px 24px;background:#111;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">🖨️ Print</button></div>';
+  d+='</body></html>';
+  var mob=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  try{
+    if(mob){var blob=new Blob([d],{type:'text/html'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.target='_blank';document.body.appendChild(a);a.click();document.body.removeChild(a);return;}
+    var w=window.open('','_blank','width=860,height=980');
+    if(w){w.document.open();w.document.write(d);w.document.close();}
+  }catch(e){toast('Print failed','err');}
+}
+async function rgEditReceipt(id){
+  closM('rgMod');
+  var rgs=ld(RG_KEY);var rec=rgs.find(function(r){return r.id===id;});if(!rec)return;
+  _rgCust={name:rec.customerName,phone:rec.customerPhone,email:rec.customerEmail};
+  _rgItems=rec.items.map(function(it){return{id:it.id||Date.now()+Math.random(),description:it.description,quantity:it.quantity,unitPrice:it.unitPrice,total:it.total};});
+  document.getElementById('rgCName').value=rec.customerName;
+  document.getElementById('rgCPhone').value=rec.customerPhone;
+  document.getElementById('rgCEmail').value=rec.customerEmail||'';
+  document.getElementById('rgDiscount').value=rec.discount||0;
+  document.getElementById('rgPayStatus').value=rec.paymentStatus||'unpaid';
+  document.getElementById('rgTech').value=rec.technician||'';
+  document.getElementById('rgNotes').value=rec.notes||'';
+  rgRenderItems();
+  // Remove old receipt, user will re-generate
+  rgs=rgs.filter(function(r){return r.id!==id;});sv(RG_KEY,rgs);
+  rgTab('create');document.querySelectorAll('.rg-tab').forEach(function(b,i){b.classList.toggle('on',i===0);});
+  rgNextStep(2);
+  toast('Editing receipt — make changes and re-generate.','ok');
+}
+async function rgDeleteReceipt(id){
+  if(!(await cdConfirm('Delete this generated receipt permanently?','🗑️')))return;
+  var rgs=ld(RG_KEY);rgs=rgs.filter(function(r){return r.id!==id;});sv(RG_KEY,rgs);
+  closM('rgMod');rgLoadHistory();rgUpdateDash();toast('Receipt deleted','ok');
+}
+function rgShowSync(){
+  var rgs=ld(RG_KEY);if(!Array.isArray(rgs))rgs=[];
+  var synced=rgs.filter(function(r){return r.synced;}).length;
+  var pending=rgs.filter(function(r){return !r.synced;}).length;
+  var h='<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px">';
+  h+='<div style="flex:1;background:var(--card2);padding:12px;border-radius:var(--r);border:1px solid var(--bd);text-align:center">';
+  h+='<div style="font-size:20px;font-weight:700;color:var(--grn)">'+synced+'</div><div style="font-size:11px;color:var(--tx2)">🟢 Synced</div></div>';
+  h+='<div style="flex:1;background:var(--card2);padding:12px;border-radius:var(--r);border:1px solid var(--bd);text-align:center">';
+  h+='<div style="font-size:20px;font-weight:700;color:var(--amb)">'+pending+'</div><div style="font-size:11px;color:var(--tx2)">🟡 Pending</div></div>';
+  h+='</div>';
+  h+='<div class="wb wb-grn">Push syncs to MongoDB database. Pull retrieves from database.</div>';
+  document.getElementById('rgSyncStatus').innerHTML=h;
+}
+async function rgPushSync(){
+  var rgs=ld(RG_KEY);if(!Array.isArray(rgs))rgs=[];
+  var pending=rgs.filter(function(r){return !r.synced;});
+  if(!pending.length){toast('All receipts already synced!','ok');return;}
+  showL();
+  try{
+    var res=await fetch('/api/generated-receipts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(pending)});
+    var data=await res.json();
+    if(res.ok){
+      pending.forEach(function(r){r.synced=true;});
+      sv(RG_KEY,rgs);rgShowSync();rgLoadHistory();
+      toast(pending.length+' receipt(s) synced to database!','ok');
+    } else { toast('Sync failed: '+(data.error||'Unknown'),'err'); }
+  }catch(e){toast('Sync failed — check connection','err');}
+  hideL();
+}
+async function rgPullSync(){
+  showL();
+  try{
+    var res=await fetch('/api/generated-receipts');
+    var data=await res.json();
+    if(res.ok&&Array.isArray(data)){
+      var rgs=ld(RG_KEY);if(!Array.isArray(rgs))rgs=[];
+      var localIds=rgs.map(function(r){return r.id;});
+      data.forEach(function(row){
+        var rec={id:row.localId,receiptNumber:row.receiptNumber,customerName:row.customerName,
+          customerPhone:row.customerPhone,customerEmail:row.customerEmail||'',date:row.date,
+          items:row.items||[],subtotal:row.subtotal||0,discount:row.discount||0,total:row.total||0,
+          notes:row.notes||'',technician:row.technician||'',paymentStatus:row.paymentStatus||'unpaid',synced:true};
+        if(!localIds.includes(rec.id)){rgs.push(rec);localIds.push(rec.id);}
+        else{var idx=rgs.findIndex(function(r){return r.id===rec.id;});if(idx>=0)rgs[idx].synced=true;}
+      });
+      sv(RG_KEY,rgs);rgLoadHistory();rgShowSync();rgUpdateDash();
+      toast('Pulled '+data.length+' receipt(s) from database.','ok');
+    } else { toast('Pull failed','err'); }
+  }catch(e){toast('Pull failed — check connection','err');}
+  hideL();
+}
+
+// ── AUTH STATE LISTENER ─────────────────────────────────────
+if(sb){
+  sb.auth.onAuthStateChange(async function(event, session){
+    if(session && session.user){
+      setBanner(session.user);
+      await loadSettingsFromDB();
+      await syncDown();
+      closeAuth();
+      toast('Welcome '+session.user.email+'!','ok');
+    }
+  });
+}
+</script>
+</body>
+</html>

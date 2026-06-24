@@ -12,7 +12,8 @@ const links = [
   { href: "/#skills", label: "Skills", section: "skills" },
   { href: "/services", label: "Services", section: "services" },
   { href: "/#contact", label: "Contact", section: "contact" },
-  { href: "/admin", label: "Admin", section: "admin" }
+  { href: "/admin", label: "Admin", section: "admin" },
+  { href: "/shop.html", label: "Receipts", section: "receipts" }
 ];
 
 export function MobileNav({ activeSection = "about" }: { activeSection?: string }) {

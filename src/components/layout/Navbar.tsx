@@ -12,6 +12,7 @@ const links = [
   { href: "/#skills", label: "Skills", section: "skills" },
   { href: "/services", label: "Services", section: "services" },
   { href: "/admin", label: "Admin", section: "admin" },
+  { href: "/shop.html", label: "Receipts", section: "receipts" },
 ];
 
 export function Navbar() {
